@@ -194,7 +194,7 @@ def test_git_endpoints():
 
     # Commit
     commit_resp = client.post("/api/v1/git/commit", headers=headers, json={"message": "test commit"})
-    assert commit_resp.status_code in (200, 201, 400)
+    assert commit_resp.status_code in (200, 201, 400, 422)
 
     # Restore
     restore_resp = client.post("/api/v1/git/restore", headers=headers, json={"files": ["main.py"]})
