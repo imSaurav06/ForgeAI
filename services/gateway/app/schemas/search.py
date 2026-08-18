@@ -6,9 +6,15 @@ from pydantic import BaseModel, Field
 class CodeSearchRequest(BaseModel):
     """Literal keyword / regex code search request."""
 
-    project_id: str = Field(..., description="Project workspace ID")
+    project_id: str | None = Field(default=None, description="Project workspace ID")
+    repository_id: str | None = Field(default=None, description="Target repository ID")
     query: str = Field(..., description="Keyword query string", json_schema_extra={"example": "JWT_SECRET"})
     file_pattern: str | None = Field(default=None, description="Optional glob file pattern e.g. *.py")
+
+    @property
+    def effective_repo_id(self) -> str:
+        res = self.repository_id or self.project_id
+        return res or ""
 
 
 class SemanticSearchRequest(BaseModel):
@@ -30,9 +36,16 @@ class SemanticSearchRequest(BaseModel):
 class SymbolSearchRequest(BaseModel):
     """AST Symbol search request."""
 
-    project_id: str = Field(..., description="Project workspace ID")
+    project_id: str | None = Field(default=None, description="Project workspace ID")
+    repository_id: str | None = Field(default=None, description="Target repository ID")
     symbol_name: str = Field(..., description="Class, function, or symbol name", json_schema_extra={"example": "validate_token"})
     symbol_type: str | None = Field(default=None, description="Optional symbol type filter: function, class, interface")
+
+    @property
+    def effective_repo_id(self) -> str:
+        res = self.repository_id or self.project_id
+        return res or ""
+
 
 
 class SearchMatchItem(BaseModel):
