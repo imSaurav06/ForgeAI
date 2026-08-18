@@ -52,7 +52,7 @@ scratch/
 tmp/
 temp/
 stage*/
-docs/
+
 # Local validation / runtime evidence
 **/stage*/
 
