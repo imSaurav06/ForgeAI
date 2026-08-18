@@ -14,12 +14,13 @@ class TestAndQualityRunners:
     async def run_pytest(
         self,
         test_path: str | None = None,
+        target_path: str | None = None,
         timeout_sec: float = 60.0,
         cwd: str | Path | None = None,
         base_root: str | Path | None = None,
     ) -> dict[str, Any]:
         """Execute pytest inside the selected repository boundary."""
-        actual_test_path = test_path
+        actual_test_path = test_path or target_path
         if actual_test_path and cwd:
             target_p = Path(cwd) / actual_test_path
             if not target_p.exists():

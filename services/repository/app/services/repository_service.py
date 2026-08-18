@@ -408,9 +408,11 @@ class RepositoryService:
             return []
         matches: list[dict[str, Any]] = []
         q_lower = query.lower()
-        for root, _, files in os.walk(repo_root):
-            if any(p.startswith(".") or p in ("node_modules", ".venv", "__pycache__", ".git") for p in Path(root).parts):
-                continue
+        for root, dirs, files in os.walk(repo_root):
+            dirs[:] = [
+                d for d in dirs
+                if not d.startswith(".") and d not in ("node_modules", ".venv", "__pycache__", ".git", "build", "dist", "site-packages")
+            ]
             for file in files:
                 f_path = Path(root) / file
                 try:

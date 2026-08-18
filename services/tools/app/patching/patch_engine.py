@@ -15,6 +15,22 @@ class PatchEngine:
     def __init__(self, sandbox: SecuritySandbox | None = None) -> None:
         self.sandbox = sandbox or SecuritySandbox()
 
+    def apply_patch(
+        self,
+        repository_root: Path | None = None,
+        base_root: Path | None = None,
+        files_to_create: list[dict[str, str]] | None = None,
+        files_to_modify: list[dict[str, str]] | None = None,
+        files_to_delete: list[str] | None = None,
+    ) -> dict[str, Any]:
+        root = repository_root or base_root or self.sandbox.workspace_root
+        return self.apply_file_patches(
+            repository_root=root,
+            files_to_create=files_to_create,
+            files_to_modify=files_to_modify,
+            files_to_delete=files_to_delete,
+        )
+
     def apply_file_patches(
         self,
         repository_root: Path,

@@ -125,6 +125,7 @@ class GitService:
 
         return {
             "branch": branch,
+            "current_branch": branch,
             "clean": len(staged) == 0 and len(modified) == 0 and len(untracked) == 0,
             "staged": staged,
             "unstaged": modified,
@@ -159,6 +160,9 @@ class GitService:
                 commits.append(
                     {
                         "hash": parts[0],
+                        "commit_hash": parts[0],
+                        "commit_sha": parts[0],
+                        "sha": parts[0],
                         "author": parts[1],
                         "date": parts[2],
                         "message": parts[3],
