@@ -476,8 +476,7 @@ class RepositoryService:
         return results
 
     async def delete_repository(self, repository_id: str) -> dict[str, Any]:
-        """Delete repository metadata from memory and MongoDB."""
-        meta = self.get_repository_metadata(repository_id)
+        """Delete repository metadata from memory, cache, and MongoDB."""
         if repository_id in self._registered_repos:
             del self._registered_repos[repository_id]
         self.cache.delete(repository_id)
@@ -485,7 +484,8 @@ class RepositoryService:
             await self.mongo_repo.delete_repository(repository_id)
         except Exception:
             pass
-        return {"deleted_id": repository_id, "success": True}
+        return {"deleted_id": repository_id, "id": repository_id, "success": True}
+
 
 
 
