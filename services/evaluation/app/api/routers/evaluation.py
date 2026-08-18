@@ -55,6 +55,18 @@ async def run_benchmark(payload: BenchmarkRunRequest) -> SuccessResponse[Benchma
 
 
 @router.get(
+    "/benchmark",
+    response_model=SuccessResponse[BenchmarkRunResponse],
+    summary="Get Benchmark Suite Results",
+    description="Returns benchmark results for active model.",
+)
+async def get_benchmark() -> SuccessResponse[BenchmarkRunResponse]:
+    result = eval_service.run_benchmark(model="qwen2.5-coder:7b-instruct-q4_0")
+    resp = BenchmarkRunResponse(**result)
+    return SuccessResponse(data=resp, message="Benchmark suite retrieved")
+
+
+@router.get(
     "/history",
     response_model=SuccessResponse[list[EvaluationRunResponse]],
     summary="Get Evaluation History",

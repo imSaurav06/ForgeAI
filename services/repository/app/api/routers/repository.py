@@ -268,8 +268,11 @@ async def get_repository_imports(
     return SuccessResponse(data=imports, message="Imports retrieved")
 
 
-@router.post(
-    "/search/code",
+search_router = APIRouter(prefix="/v1/search", tags=["Repository Search"])
+
+
+@search_router.post(
+    "/code",
     response_model=SuccessResponse[list[dict[str, Any]]],
     summary="Search Code in Repository",
     description="Finds text/regex occurrences across repository files.",
@@ -284,8 +287,8 @@ async def search_code_endpoint(
     return SuccessResponse(data=matches, message="Code search completed")
 
 
-@router.post(
-    "/search/symbol",
+@search_router.post(
+    "/symbol",
     response_model=SuccessResponse[list[dict[str, Any]]],
     summary="Search Symbols in Repository",
     description="Finds AST symbols matching identifier query.",
@@ -300,8 +303,11 @@ async def search_symbol_endpoint(
     return SuccessResponse(data=matches, message="Symbol search completed")
 
 
-@router.get(
-    "/projects/{id}",
+projects_router = APIRouter(prefix="/v1/projects", tags=["Projects"])
+
+
+@projects_router.get(
+    "/{id}",
     response_model=SuccessResponse[RepositoryMetadata],
     summary="Get Project Details",
     description="Retrieves metadata for a specific project/repository ID.",
@@ -314,8 +320,8 @@ async def get_project_details(
     return SuccessResponse(data=meta, message="Project details found")
 
 
-@router.delete(
-    "/projects/{id}",
+@projects_router.delete(
+    "/{id}",
     response_model=SuccessResponse[dict[str, Any]],
     summary="Delete Project Registration",
     description="Deletes project repository registration.",
@@ -325,4 +331,5 @@ async def delete_project_endpoint(
 ) -> SuccessResponse[dict[str, Any]]:
     res = await repo_service.delete_repository(id)
     return SuccessResponse(data=res, message="Project deleted successfully")
+
 
