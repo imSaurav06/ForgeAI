@@ -1,0 +1,434 @@
+from typing import Any
+
+import httpx
+
+from services.agent.app.core.events.event_bus import get_agent_event_bus
+from services.agent.app.core.planner.agent_planner import AgentPlanner
+from services.agent.app.core.sessions.session_store import AgentExecutionRun, get_agent_session_store
+from services.agent.app.core.state_machine.states import AgentState, AgentStateMachine
+from services.gateway.app.core.internal_auth import InternalAuthManager
+from shared.config.settings import get_settings
+from shared.logging.logger import logger
+from services.agent.app.core.planner.plan_validator import PlanValidator
+
+class AgentWorkflowOrchestrator:
+    """
+    Main Workflow Orchestrator driving autonomous agent runs across all 7 modes,
+    validating state machine transitions, delegating to LLM/Retrieval/Tools microservices,
+    and executing automatic self-correction repair loops on test failures.
+    """
+
+    def __init__(self) -> None:
+        self.settings = get_settings()
+        self.session_store = get_agent_session_store()
+        self.event_bus = get_agent_event_bus()
+
+    def _get_internal_headers(self) -> dict[str, str]:
+        mgr = InternalAuthManager()
+        token = mgr.generate_internal_token("agent-service")
+        return {
+            "X-Internal-Service-Token": token,
+            "X-User-ID": "agent_system",
+            "X-User-Role": "admin",
+        }
+
+    async def execute_run(self, run_id: str) -> AgentExecutionRun:
+        """Execute full autonomous run workflow."""
+        run = self.session_store.get_run(run_id)
+        state_machine = AgentStateMachine(initial_state=run.state)
+
+        # Emit agent.started
+        self.event_bus.emit(run_id, "agent.started", {"mode": run.mode, "instruction": run.instruction})
+
+        try:
+            # Step 1: ANALYZING
+            state_machine.transition_to(AgentState.ANALYZING)
+            run.state = AgentState.ANALYZING
+            self.session_store.update_run(run)
+            self.event_bus.emit(run_id, "repository.searching", {"repository_id": run.repository_id})
+
+            # Step 2: RETRIEVING
+            state_machine.transition_to(AgentState.RETRIEVING)
+            run.state = AgentState.RETRIEVING
+            retrieved_context = await self._retrieve_context(run.repository_id, run.instruction)
+            run.retrieved_context = retrieved_context
+
+            # Step 3: PLANNING
+            state_machine.transition_to(AgentState.PLANNING)
+            run.state = AgentState.PLANNING
+            execution_plan = AgentPlanner.decompose_requirements(
+                run.instruction,
+                run.mode,
+            )
+
+            run.execution_plan = execution_plan.model_dump()
+            PlanValidator.validate(execution_plan)
+            self.session_store.update_run(run)
+            self.event_bus.emit(
+                run_id,
+                "plan.created",
+                {"plan": execution_plan.model_dump()},
+            )
+
+            # Step 4: CODING
+            state_machine.transition_to(AgentState.CODING)
+            run.state = AgentState.CODING
+            llm_response = await self._call_llm(
+                run.instruction, run.mode, retrieved_context, model_override=run.selected_model
+            )
+            run.steps.append({"step": "generate_patch", "output": llm_response})
+
+            if run.mode in ("ASK", "PLAN", "REVIEW", "EXPLAIN"):
+                state_machine.transition_to(AgentState.COMPLETED)
+                run.state = AgentState.COMPLETED
+                self.session_store.update_run(run)
+                self.event_bus.emit(run_id, "agent.completed", {"status": "completed"})
+                return run
+
+            # Step 5: APPLYING
+            state_machine.transition_to(AgentState.APPLYING)
+            run.state = AgentState.APPLYING
+            patch_status = await self._apply_patch(llm_response,run.repository_id)
+            self.event_bus.emit(run_id, "patch.created", {"status": patch_status})
+
+            # Step 6: TESTING & SELF-CORRECTION LOOP
+            state_machine.transition_to(AgentState.TESTING)
+            run.state = AgentState.TESTING
+            test_success = await self._run_tests_and_repair_loop(run, state_machine)
+
+            if not test_success:
+                state_machine.transition_to(AgentState.FAILED)
+                run.state = AgentState.FAILED
+                self.session_store.update_run(run)
+                self.event_bus.emit(run_id, "agent.completed", {"status": "failed"})
+                return run
+
+            # Step 7: COMPLETED
+            state_machine.transition_to(AgentState.COMPLETED)
+            run.state = AgentState.COMPLETED
+            self.session_store.update_run(run)
+            self.event_bus.emit(run_id, "agent.completed", {"status": "completed"})
+            return run
+
+        except Exception as err:
+            logger.error(f"Error during agent run execution '{run_id}': {err}")
+            run.state = AgentState.FAILED
+            self.session_store.update_run(run)
+            self.event_bus.emit(run_id, "agent.completed", {"status": "failed", "error": str(err)})
+            return run
+
+    async def _run_tests_and_repair_loop(
+        self, run: AgentExecutionRun, state_machine: AgentStateMachine, max_repairs: int = 3
+    ) -> bool:
+        """Run tests and trigger automatic self-correction repair loop on failure."""
+        run_id = run.run_id
+
+        for attempt in range(1, max_repairs + 1):
+            test_result = await self._execute_pytest()
+            run.test_history.append({"attempt": attempt, "result": test_result})
+
+            if test_result.get("passed", True):
+                self.event_bus.emit(run_id, "tests.passed", {"attempt": attempt})
+                return True
+
+            # Tests Failed: Trigger Self-Correction
+            self.event_bus.emit(
+                run_id, "tests.failed", {"attempt": attempt, "failure_output": test_result.get("error")}
+            )
+
+            if attempt >= max_repairs:
+                logger.warning(f"Self-correction repair loop exceeded max attempts ({max_repairs}) for run '{run_id}'")
+                return False
+
+            # Execute Repair Iteration
+            run.repair_count += 1
+            self.event_bus.emit(run_id, "repair.started", {"repair_attempt": attempt})
+
+            # Transition state machine through RETRIEVING -> CODING -> APPLYING -> TESTING
+            state_machine.transition_to(AgentState.RETRIEVING)
+            repair_context = await self._retrieve_context(
+                run.repository_id, f"Fix test failure: {test_result.get('error')}"
+            )
+            run.retrieved_context += f"\n\nTest Failure Context:\n{repair_context}"
+
+            state_machine.transition_to(AgentState.CODING)
+            repair_patch = await self._call_llm(
+                instruction=f"Fix test failure: {test_result.get('error')}",
+                mode="DEBUG",
+                context=run.retrieved_context,
+                model_override=run.selected_model,
+            )
+
+            state_machine.transition_to(AgentState.APPLYING)
+            await self._apply_patch(repair_patch,run.repository_id)
+
+            state_machine.transition_to(AgentState.TESTING)
+
+        return False
+
+    async def _retrieve_context(self, repository_id: str, query: str) -> str:
+     """Call the Retrieval Service over HTTP to assemble RAG context."""
+     retrieval_url = self.settings.retrieval_service_url.rstrip("/")
+     endpoint = f"{retrieval_url}/v1/search/semantic"
+
+     payload = {
+        "repository_id": repository_id,
+        "query": query,
+        "limit": 5,
+     }
+
+     try:
+        async with httpx.AsyncClient(timeout=60.0) as client:
+            resp = await client.post(
+                endpoint,
+                json=payload,
+                headers=self._get_internal_headers(),
+            )
+
+        resp.raise_for_status()
+
+        body = resp.json()
+
+        if body.get("success") is not True:
+            message = body.get(
+                "message",
+                "Retrieval service returned an unsuccessful response",
+            )
+            raise RuntimeError(message)
+
+        matches = body.get("data", [])
+
+        if not isinstance(matches, list):
+            raise RuntimeError(
+                "Retrieval service returned an invalid data payload"
+            )
+
+        formatted_snippets: list[str] = []
+
+        for match in matches:
+            if not isinstance(match, dict):
+                continue
+
+            file_path = match.get("file_path", "")
+            start_line = match.get("start_line", 1)
+            end_line = match.get("end_line", 1)
+            snippet = match.get("snippet", "")
+
+            if not isinstance(snippet, str):
+                snippet = str(snippet)
+
+            snippet = snippet.strip()
+
+            if snippet:
+                formatted_snippets.append(
+                    f"--- File: {file_path} "
+                    f"(L{start_line}-L{end_line}) ---\n{snippet}"
+                )
+
+        return "\n\n".join(formatted_snippets)
+
+     except Exception as exc:
+        logger.error(
+            "Retrieval service failed for repository %s: %s",
+            repository_id,
+            exc,
+            exc_info=True,
+        )
+        raise RuntimeError(
+            f"Retrieval service failed for repository "
+            f"'{repository_id}': {exc}"
+        ) from exc
+
+        # 2. HTTP internal call with HMAC authentication headers
+        retrieval_url = self.settings.retrieval_service_url.rstrip("/")
+        try:
+            async with httpx.AsyncClient(timeout=10.0) as client:
+                resp = await client.post(
+                    f"{retrieval_url}/v1/search/semantic",
+                    json={"repository_id": repository_id, "query": query, "limit": 5},
+                    headers=self._get_internal_headers(),
+                )
+                if resp.status_code == 200:
+                    matches = resp.json().get("data", [])
+                    formatted_snippets: list[str] = []
+                    for m in matches:
+                        if isinstance(m, dict):
+                            fp = m.get("file_path", "")
+                            start = m.get("start_line", 1)
+                            end = m.get("end_line", 1)
+                            snip = m.get("snippet", "") or m.get("line_content", "")
+                            if snip:
+                                formatted_snippets.append(f"--- File: {fp} (L{start}-L{end}) ---\n{snip.strip()}")
+                    if formatted_snippets:
+                        return "\n\n".join(formatted_snippets)
+        except Exception as err:
+            logger.warning(f"Could not fetch retrieval context: {err}")
+
+        return ""
+
+    async def _call_llm(
+        self, instruction: str, mode: str, context: str, model_override: str | None = None
+    ) -> str:
+        """Call LLM Service HTTP endpoint to generate prompt completion with model override."""
+        llm_url = self.settings.llm_service_url.rstrip("/")
+        payload: dict[str, Any] = {"prompt": instruction, "mode": mode, "context": context}
+        if model_override:
+            payload["model_override"] = model_override
+            payload["model"] = model_override
+
+        try:
+            async with httpx.AsyncClient(timeout=300.0) as client:
+                resp = await client.post(
+                    f"{llm_url}/v1/generate",
+                    json=payload,
+                    headers=self._get_internal_headers(),
+                )
+                if resp.status_code == 200:
+                    res_data = resp.json().get("data", {})
+                    return res_data.get("response", "")
+                else:
+                    logger.error(f"LLM generation failed with HTTP status {resp.status_code}: {resp.text}")
+                    if resp.status_code in (400, 404, 422, 500, 503):
+                        err_msg = resp.text
+                        try:
+                            err_msg = resp.json().get("message") or resp.json().get("error", {}).get("message") or resp.text
+                        except Exception:
+                            pass
+                        raise Exception(f"LLM Service Error ({resp.status_code}): {err_msg}")
+        except Exception as err:
+            logger.warning(f"Could not fetch LLM generation: {err}")
+            raise err
+
+        return ""
+
+    async def _apply_patch(self,patch_data: str,repository_id: str,) -> str:
+        """Apply an LLM-generated patch to the selected repository."""
+        tools_url = self.settings.tool_service_url.rstrip("/")
+
+        import json
+        import re
+
+        json_str = patch_data
+
+        match = re.search(
+        r"```(?:json)?\s*(\{.*?\})\s*```",
+        patch_data,
+        re.DOTALL,
+        )
+
+        if match:
+            json_str = match.group(1)
+        else:
+            start = patch_data.find("{")
+            end = patch_data.rfind("}")
+
+        if start != -1 and end != -1:
+            json_str = patch_data[start : end + 1]
+
+        try:
+            data = json.loads(json_str)
+        except json.JSONDecodeError as exc:
+            logger.error(
+                f"Could not parse LLM patch response as JSON: {exc}"
+            )
+        raise RuntimeError(
+            f"LLM returned an invalid patch payload: {exc}"
+        ) from exc
+
+        if not isinstance(data, dict):
+            raise RuntimeError(
+                "LLM patch payload must be a JSON object"
+            )
+
+        files_to_create = data.get("files_to_create", [])
+        files_to_modify = data.get("files_to_modify", [])
+        files_to_delete = data.get("files_to_delete", [])
+
+        if not isinstance(files_to_create, list):
+            raise RuntimeError(
+                "files_to_create must be a list"
+            )
+
+        if not isinstance(files_to_modify, list):
+            raise RuntimeError(
+                "files_to_modify must be a list"
+            )
+
+        if not isinstance(files_to_delete, list):
+            raise RuntimeError(
+                "files_to_delete must be a list"
+            )
+
+        if not (
+            files_to_create
+            or files_to_modify
+            or files_to_delete
+        ):
+            raise RuntimeError(
+                "LLM returned an empty patch with no file operations"
+            )
+
+        payload = {
+            "repository_id": repository_id,
+            "files_to_create": files_to_create,
+            "files_to_modify": files_to_modify,
+            "files_to_delete": files_to_delete,
+        }
+
+        try:
+            async with httpx.AsyncClient(timeout=30.0) as client:
+                response = await client.post(
+                    f"{tools_url}/internal/v1/tools/apply-patch",
+                    json=payload,
+                    headers=self._get_internal_headers(),
+                )
+
+            response.raise_for_status()
+
+            body = response.json()
+            result = body.get("data", body)
+
+            if isinstance(result, dict) and result.get("success") is False:
+                raise RuntimeError(
+                    result.get(
+                        "message",
+                        "Tool patch application failed",
+                    )
+                )
+
+            return "Applied patch successfully"
+
+        except Exception as exc:
+            logger.error(
+                f"Could not apply patch to repository "
+                f"{repository_id}: {exc}",
+                exc_info=True,
+            )
+            raise RuntimeError(
+                f"Failed to apply patch to repository "
+                f"'{repository_id}': {exc}"
+            ) from exc
+
+    async def _execute_pytest(self, pytest_path: str | None = None) -> dict[str, Any]:
+        """Execute pytest runner via Tools Service."""
+        tools_url = self.settings.tool_service_url.rstrip("/")
+        try:
+            async with httpx.AsyncClient(timeout=30.0) as client:
+                payload = {"path": pytest_path} if pytest_path else {}
+                resp = await client.post(
+                    f"{tools_url}/internal/v1/tools/run-test",
+                    json=payload,
+                    headers=self._get_internal_headers(),
+                )
+                if resp.status_code == 200:
+                    data = resp.json().get("data", {})
+                    # exit code 5 means "No tests collected", which we treat as passing if no tests were written
+                    passed = data.get("exit_code") == 0 or data.get("exit_code") == 5 or data.get("status") == "success"
+                    return {
+                        "passed": passed,
+                        "error": data.get("output") or data.get("stdout") or data.get("stderr"),
+                    }
+        except Exception as err:
+            logger.warning(f"Could not run tests: {err}")
+
+        return {"passed": True, "error": None}

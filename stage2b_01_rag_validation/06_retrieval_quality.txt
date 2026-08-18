@@ -1,0 +1,191 @@
+[
+  {
+    "id": "Q1_ARCH",
+    "expected_files": [
+      "package.json",
+      "vite.config.js",
+      "src/App.jsx"
+    ],
+    "retrieved_files": [
+      "src/components/FeaturesSection.jsx",
+      "src/components/Navbar.jsx",
+      "src/components/HeroSection.jsx",
+      "tailwind.config.js",
+      "postcss.config.js",
+      "src/App.jsx",
+      "index.html",
+      "src/components/Footer.jsx",
+      "src/components/Navbar.css",
+      "src/main.jsx"
+    ],
+    "retrieval_success": true
+  },
+  {
+    "id": "Q2_ENTRY",
+    "expected_files": [
+      "src/main.jsx",
+      "index.html"
+    ],
+    "retrieved_files": [
+      "vite.config.js",
+      "vite.config.js",
+      "src/App.jsx",
+      "src/main.jsx",
+      "src/main.jsx",
+      ".forgeai-pty-test/diagnostic_ws_test.py",
+      "src/components/Navbar.jsx",
+      "src/components/FeaturesSection.jsx",
+      "src/App.jsx",
+      "src/components/Footer.jsx"
+    ],
+    "retrieval_success": true
+  },
+  {
+    "id": "Q3_APP_COMP",
+    "expected_files": [
+      "src/App.jsx"
+    ],
+    "retrieved_files": [
+      "vite.config.js",
+      "vite.config.js",
+      "src/App.jsx",
+      ".forgeai-pty-test/test_forgeai_real_pty_node.py",
+      ".forgeai-pty-test/test_forgeai_real_pty_node.py",
+      ".forgeai-pty-test/test_forgeai_real_pty_state.py",
+      ".forgeai-pty-test/test_forgeai_real_pty_cmd.py",
+      ".forgeai-pty-test/test_forgeai_real_pty_cmd.py",
+      ".forgeai-pty-test/test_forgeai_real_pty_state.py",
+      "src/App.jsx"
+    ],
+    "retrieval_success": true
+  },
+  {
+    "id": "Q4_HERO",
+    "expected_files": [
+      "src/components/HeroSection.jsx"
+    ],
+    "retrieved_files": [
+      "src/components/HeroSection.jsx",
+      ".forgeai-pty-test/test_forgeai_real_pty_node.py",
+      ".forgeai-pty-test/test_forgeai_real_pty_cmd.py",
+      "vite.config.js",
+      ".forgeai-pty-test/test_forgeai_real_pty_node.py",
+      ".forgeai-pty-test/test_forgeai_real_pty_state.py",
+      ".forgeai-pty-test/test_forgeai_real_pty_cmd.py",
+      "vite.config.js",
+      ".forgeai-pty-test/test_forgeai_real_pty_state.py",
+      "src/components/HeroSection.jsx"
+    ],
+    "retrieval_success": true
+  },
+  {
+    "id": "Q5_FEATURES",
+    "expected_files": [
+      "src/components/FeaturesSection.jsx"
+    ],
+    "retrieved_files": [
+      "src/components/FeaturesSection.jsx",
+      "vite.config.js",
+      ".forgeai-pty-test/test_forgeai_real_pty_node.py",
+      ".forgeai-pty-test/test_forgeai_real_pty_node.py",
+      ".forgeai-pty-test/test_forgeai_real_pty_cmd.py",
+      ".forgeai-pty-test/test_forgeai_real_pty_cmd.py",
+      ".forgeai-pty-test/test_forgeai_real_pty_state.py",
+      "vite.config.js",
+      ".forgeai-pty-test/test_forgeai_real_pty_state.py",
+      "src/App.jsx"
+    ],
+    "retrieval_success": true
+  },
+  {
+    "id": "Q6_NAVBAR",
+    "expected_files": [
+      "src/components/Navbar.jsx"
+    ],
+    "retrieved_files": [
+      "vite.config.js",
+      "vite.config.js",
+      ".forgeai-pty-test/test_forgeai_real_pty_node.py",
+      ".forgeai-pty-test/test_forgeai_real_pty_cmd.py",
+      ".forgeai-pty-test/test_forgeai_real_pty_state.py",
+      "src/components/Navbar.jsx",
+      ".forgeai-pty-test/test_forgeai_real_pty_node.py",
+      ".forgeai-pty-test/test_forgeai_real_pty_cmd.py",
+      ".forgeai-pty-test/test_forgeai_real_pty_state.py",
+      "src/App.jsx"
+    ],
+    "retrieval_success": true
+  },
+  {
+    "id": "Q7_CONFIG",
+    "expected_files": [
+      "vite.config.js"
+    ],
+    "retrieved_files": [
+      "vite.config.js",
+      "vite.config.js",
+      "vite.config.js",
+      ".forgeai-pty-test/test_forgeai_real_pty_node.py",
+      ".forgeai-pty-test/test_forgeai_real_pty_node.py",
+      ".forgeai-pty-test/test_forgeai_real_pty_cmd.py",
+      ".forgeai-pty-test/test_forgeai_real_pty_cmd.py",
+      ".forgeai-pty-test/test_forgeai_real_pty_state.py",
+      ".forgeai-pty-test/test_forgeai_real_pty_state.py",
+      ".forgeai-pty-test/test_forgeai_real_pty_cwd.py"
+    ],
+    "retrieval_success": true
+  },
+  {
+    "id": "Q8_STYLING",
+    "expected_files": [
+      "src/index.css"
+    ],
+    "retrieved_files": [
+      "vite.config.js",
+      "vite.config.js",
+      ".forgeai-pty-test/test_forgeai_real_pty_node.py",
+      ".forgeai-pty-test/test_forgeai_real_pty_cmd.py",
+      ".forgeai-pty-test/test_forgeai_real_pty_state.py",
+      ".forgeai-pty-test/test_forgeai_real_pty_node.py",
+      ".forgeai-pty-test/test_forgeai_real_pty_cmd.py",
+      ".forgeai-pty-test/test_forgeai_real_pty_state.py",
+      ".forgeai-pty-test/test_forgeai_real_pty_cwd.py",
+      ".forgeai-pty-test/test_forgeai_real_pty_cwd.py"
+    ],
+    "retrieval_success": false
+  },
+  {
+    "id": "Q9_NEG_STRIPE",
+    "expected_files": [],
+    "retrieved_files": [
+      ".forgeai-pty-test/test_forgeai_real_pty_node.py",
+      "vite.config.js",
+      ".forgeai-pty-test/test_forgeai_real_pty_cmd.py",
+      ".forgeai-pty-test/test_forgeai_real_pty_state.py",
+      ".forgeai-pty-test/test_forgeai_real_pty_node.py",
+      "vite.config.js",
+      ".forgeai-pty-test/test_forgeai_real_pty_cmd.py",
+      ".forgeai-pty-test/test_forgeai_real_pty_state.py",
+      ".forgeai-pty-test/test_forgeai_real_pty_cwd.py",
+      ".forgeai-pty-test/test_forgeai_real_pty_cwd.py"
+    ],
+    "retrieval_success": true
+  },
+  {
+    "id": "Q10_NEG_REDUX",
+    "expected_files": [],
+    "retrieved_files": [
+      "vite.config.js",
+      "vite.config.js",
+      ".forgeai-pty-test/test_forgeai_real_pty_state.py",
+      ".forgeai-pty-test/test_forgeai_real_pty_cmd.py",
+      ".forgeai-pty-test/test_forgeai_real_pty_node.py",
+      ".forgeai-pty-test/test_forgeai_real_pty_node.py",
+      ".forgeai-pty-test/test_forgeai_real_pty_cmd.py",
+      ".forgeai-pty-test/test_forgeai_real_pty_state.py",
+      ".forgeai-pty-test/test_forgeai_real_pty_cwd.py",
+      ".forgeai-pty-test/test_forgeai_real_pty_cwd.py"
+    ],
+    "retrieval_success": true
+  }
+]

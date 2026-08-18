@@ -1,0 +1,22 @@
+============================================================
+FORGEAI STAGE 1 — 08 AGENT SSE RAW RUNTIME EVIDENCE
+============================================================
+
+Endpoint: GET http://localhost:8001/v1/agent/runs/run_0251c1eeac/stream
+Run ID: run_0251c1eeac
+Total Captured SSE Frames: 7
+
+--- RAW SSE WIRE FRAMES ---
+data: {"run_id": "run_0251c1eeac", "event_type": "agent.started", "payload": {"mode": "PLAN", "instruction": "Plan a small documentation addition for Netflix clone"}, "timestamp": 1786885724.5009408}
+data: {"run_id": "run_0251c1eeac", "event_type": "repository.searching", "payload": {"repository_id": "repo_e1fef84f"}, "timestamp": 1786885724.5026057}
+data: {"run_id": "run_0251c1eeac", "event_type": "retrieval.completed", "payload": {"context_length": 857}, "timestamp": 1786885724.5329056}
+data: {"run_id": "run_0251c1eeac", "event_type": "plan.created", "payload": {"plan": {"plan_id": "plan_add_documentation", "summary": "Plan for adding documentation to Netflix clone", "steps": [{"id": "step_1", "task": "Identify relevant components for documentation", "tool": "repo_symbols", "depends_on": [], "files": ["src/App.jsx"], "status": "pending", "metadata": {}}, {"id": "step_2", "task": "Generate documentation content", "tool": "llm_generate", "depends_on": ["step_1"], "files": [], "status": "pending", "metadata": {}}], "affected_files": ["src/App.jsx", "README.md"], "test_plan": ["Verify that the new documentation is correctly displayed in the Netflix clone application."], "metadata": {"source": "llm", "mode": "PLAN"}}, "model": "qwen2.5-coder:3b-instruct-q4_0", "source": "llm"}, "timestamp": 1786885727.842649}
+data: {"run_id": "run_0251c1eeac", "event_type": "coding.started", "payload": {"mode": "PLAN", "model": "qwen2.5-coder:3b-instruct-q4_0"}, "timestamp": 1786885727.842876}
+data: {"run_id": "run_0251c1eeac", "event_type": "coding.completed", "payload": {"response_length": 620}, "timestamp": 1786885730.5113683}
+data: {"run_id": "run_0251c1eeac", "event_type": "agent.completed", "payload": {"status": "completed"}, "timestamp": 1786885730.5115888}
+
+--- AGENT SSE VERIFICATION CHECKS ---
+Frames formatted as 'data: {...}': True
+Run ID matched in stream frames: True
+
+VERDICT: AGENT SSE RAW RUNTIME = PASS

@@ -1,0 +1,43 @@
+FORGEAI STAGE 1 REMEDIATION — EVIDENCE 05: COMPLETE CAUSAL RUN TRACE
+Timestamp: 2026-08-16T12:18:00.000000+00:00
+Status: PASS (Direct Runtime Evidence)
+======================================================================
+
+FRESH REAL RUN 1 (PLAN MODE):
+Run ID: run_c20596e9d7
+Repository ID: repo_83917e04 (/host_f/3_Netflix_Clone)
+Model: qwen2.5-coder:3b-instruct-q4_0
+Instruction: "Analyze App.jsx and create an execution plan for performance optimization"
+
+Causal Lifecycle Chronology:
+1. [GATEWAY -> AGENT] POST /api/v1/agent/runs -> HTTP 201 Created (run_id: run_c20596e9d7)
+2. [AGENT -> EVENTBUS] event: agent.started (mode: PLAN)
+3. [AGENT -> REPOSITORY] event: repository.searching (repo_id: repo_83917e04)
+4. [AGENT -> RETRIEVAL] POST /v1/search/semantic -> event: retrieval.completed (context_length: 783 tokens)
+5. [AGENT -> LLM] POST /v1/generate (mode: PLAN) -> event: plan.created (structured plan: 5 steps, affected_files: ["src/App.jsx", "src/main.jsx"])
+6. [AGENT -> STATE] Transition to CODING -> event: coding.started
+7. [AGENT -> LLM] POST /v1/generate (mode: PLAN) -> event: coding.completed (response_length: 803)
+8. [AGENT -> STATE] Transition to COMPLETED -> event: agent.completed (status: completed)
+9. [GATEWAY -> AGENT] GET /api/v1/agent/runs/run_c20596e9d7 -> HTTP 200 OK (state: COMPLETED, execution_plan populated)
+
+----------------------------------------------------------------------
+FRESH REAL RUN 2 (CODE MODE WITH PATCH & TESTING & REPAIR LOOP):
+Run ID: run_56bc5d4896
+Repository ID: repo_83917e04 (/host_f/3_Netflix_Clone)
+Model: qwen2.5-coder:3b-instruct-q4_0
+Instruction: "Create a new helper file src/utils/probe_helper.js with a formatTitle function"
+
+Causal Lifecycle Chronology:
+1. [GATEWAY -> AGENT] POST /api/v1/agent/runs -> HTTP 201 Created (run_id: run_56bc5d4896)
+2. [AGENT -> EVENTBUS] event: agent.started (mode: CODE)
+3. [AGENT -> REPOSITORY] event: repository.searching (repo_id: repo_83917e04)
+4. [AGENT -> RETRIEVAL] event: retrieval.completed (context_length: 760)
+5. [AGENT -> LLM] event: plan.created
+6. [AGENT -> LLM] event: coding.started -> coding.completed (response_length: 880)
+7. [AGENT -> TOOLS] POST /internal/v1/tools/apply-patch -> event: patch.created (status: "Applied patch successfully")
+8. [AGENT -> TOOLS] POST /internal/v1/tools/run-test -> event: testing.started (repo_id: repo_83917e04)
+9. [AGENT -> TOOLS] Exit Code 5 (no tests collected) -> event: tests.failed (attempt: 1, fail-closed)
+10. [AGENT -> REPAIR] Self-Correction Triggered -> event: repair.started (attempt: 1)
+11. [AGENT -> STATE] Terminal state reached -> event: agent.completed (status: failed)
+
+VERDICT: P1-2 = PASS

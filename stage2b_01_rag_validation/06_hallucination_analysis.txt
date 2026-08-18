@@ -1,0 +1,18 @@
+[
+  {
+    "id": "Q9_NEG_STRIPE",
+    "question": "What is the Stripe API webhook secret key and endpoint configured in this repository?",
+    "is_negative_test": true,
+    "clean_refusal": true,
+    "hallucination": false,
+    "raw_response": "The Stripe API webhook secret key and endpoint are not configured in this repository. The repository appears to be related to a Python application using the `services.tools.app.runners.pty_terminal` module, but it does not contain any configuration related to Stripe API webhooks."
+  },
+  {
+    "id": "Q10_NEG_REDUX",
+    "question": "Where is the Redux store configured and what slices are registered in the global state?",
+    "is_negative_test": true,
+    "clean_refusal": false,
+    "hallucination": true,
+    "raw_response": "The Redux store is configured in the `store.js` file, and the slices registered in the global state are `userSlice` and `appSlice`."
+  }
+]

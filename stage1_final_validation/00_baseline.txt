@@ -1,0 +1,22 @@
+============================================================
+FORGEAI STAGE 1 — BASELINE RUNTIME STATUS
+Timestamp: 2026-08-15T22:57:03.276900+00:00
+============================================================
+
+1. MICROSERVICES HEALTH:
+  - GATEWAY: Status 200 (Healthy: True)
+    Response: {"service": "api-gateway", "status": "healthy", "version": "0.1.0", "timestamp": "2026-08-15T22:57:03.198331+00:00", "details": {"status": "degraded", "timestamp": "2026-08-15T22:56:59.921405+00:00", "services": {"gateway": {"service_name": "gateway", "status": "offline", "version": null, "url": "http://localhost:8000", "latency_ms": 3065.27, "error": ""}, "agent": {"service_name": "agent", "status": "healthy", "version": "0.1.0", "url": "http://agent:8001", "latency_ms": 57.9, "error": null}, "llm": {"service_name": "llm", "status": "healthy", "version": "0.1.0", "url": "http://llm:8002", "latency_ms": 49.54, "error": null}, "repository": {"service_name": "repository", "status": "healthy", "version": "0.1.0", "url": "http://repository:8003", "latency_ms": 47.74, "error": null}, "retrieval": {"service_name": "retrieval", "status": "healthy", "version": "0.1.0", "url": "http://retrieval:8004", "latency_ms": 38.12, "error": null}, "tools": {"service_name": "tools", "status": "healthy", "version": "0.1.0", "url": "http://tools:8005", "latency_ms": 29.29, "error": null}, "git": {"service_name": "git", "status": "healthy", "version": "0.1.0", "url": "http://git:8006", "latency_ms": 23.97, "error": null}, "evaluation": {"service_name": "evaluation", "status": "healthy", "version": "0.1.0", "url": "http://evaluation:8007", "latency_ms": 20.7, "error": null}}}}
+  - AGENT: Status 200 (Healthy: True)
+    Response: {"service": "agent-service", "status": "healthy", "version": "0.1.0", "timestamp": "2026-08-15T22:57:03.209128+00:00", "details": {"mongodb": {"status": "healthy", "mongodb_connected": true, "database_name": "forge_ai_db"}}}
+  - LLM: Status 200 (Healthy: True)
+    Response: {"service": "llm-service", "status": "healthy", "version": "0.1.0", "timestamp": "2026-08-15T22:57:03.220192+00:00", "details": {"ollama": {"url": "http://host.docker.internal:11434"}}}
+  - REPOSITORY: Status 200 (Healthy: True)
+    Response: {"service": "repository-service", "status": "healthy", "version": "0.1.0", "timestamp": "2026-08-15T22:57:03.231137+00:00", "details": {"mongodb": {"status": "healthy", "mongodb_connected": true, "database_name": "forge_ai_db"}}}
+  - RETRIEVAL: Status 200 (Healthy: True)
+    Response: {"service": "retrieval-service", "status": "healthy", "version": "0.1.0", "timestamp": "2026-08-15T22:57:03.241700+00:00", "details": {"qdrant": {"status": "healthy", "qdrant_connected": true, "collection_name": "forge_ai_code", "collection_exists": true}, "embedding_model": {"status": "healthy", "model_name": "BAAI/bge-small-en-v1.5", "dimension": 384, "provider": "FastEmbed (ONNX Local)"}}}
+  - TOOLS: Status 200 (Healthy: True)
+    Response: {"service": "tool-service", "status": "healthy", "version": "0.1.0", "timestamp": "2026-08-15T22:57:03.251376+00:00", "details": null}
+  - GIT: Status 200 (Healthy: True)
+    Response: {"service": "git-service", "status": "healthy", "version": "0.1.0", "timestamp": "2026-08-15T22:57:03.264090+00:00", "details": null}
+  - EVALUATION: Status 200 (Healthy: True)
+    Response: {"service": "evaluation-service", "status": "healthy", "version": "0.1.0", "timestamp": "2026-08-15T22:57:03.275372+00:00", "details": {"mongodb": {"status": "healthy", "mongodb_connected": true, "database_name": "forge_ai_db"}}}

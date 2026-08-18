@@ -1,0 +1,26 @@
+[
+  {
+    "id": "Q1_ARCH",
+    "question": "What is the high-level architecture and framework used for this frontend application?",
+    "run1": "{\n  \"answer\": \"The frontend application uses React and Tailwind CSS as its high-level architecture and framework.\",\n  \"references\": [\"src/components/FeaturesSection.jsx\", \"src/components/Navbar.jsx\", \"src/components/HeroSection.jsx\", \"tailwind.config.js\", \"postcss.config.js\", \"src/App.jsx\", \"index.html\", \"src/components/Footer.jsx\", \"src/components/Navbar.css\", \"src/main.jsx\"]\n}",
+    "run2": "{\n  \"answer\": \"The frontend application uses React and Tailwind CSS for its high-level architecture and framework.\",\n  \"references\": [\"src/components/FeaturesSection.jsx\", \"src/components/Navbar.jsx\", \"src/components/HeroSection.jsx\", \"tailwind.config.js\", \"postcss.config.js\", \"src/App.jsx\", \"index.html\", \"src/components/Footer.jsx\", \"src/components/Navbar.css\", \"src/main.jsx\"]\n}",
+    "run3": "{\n  \"answer\": \"The frontend application uses React and Tailwind CSS for its high-level architecture and framework.\",\n  \"references\": [\"src/components/FeaturesSection.jsx\", \"src/components/Navbar.jsx\", \"src/components/HeroSection.jsx\", \"tailwind.config.js\", \"postcss.config.js\", \"src/App.jsx\", \"index.html\", \"src/components/Footer.jsx\", \"src/components/Navbar.css\", \"src/main.jsx\"]\n}",
+    "identical": false
+  },
+  {
+    "id": "Q3_APP_COMP",
+    "question": "Which child UI components are imported and rendered inside the main App component in src/App.jsx?",
+    "run1": "```json\n{\n  \"answer\": \"The child UI components imported and rendered inside the main App component in src/App.jsx are `Navbar`.\",\n  \"references\": [\"src/App.jsx (Lines 3-3) Symbol: ./components/Navbar\"]\n}\n```",
+    "run2": "```json\n{\n  \"answer\": \"The child UI components imported and rendered inside the main App component in src/App.jsx are `Navbar`.\",\n  \"references\": [\"src/App.jsx (Lines 3-3) Symbol: ./components/Navbar\"]\n}\n```",
+    "run3": "```json\n{\n  \"answer\": \"The child UI components imported and rendered inside the main App component in src/App.jsx are `Navbar`.\",\n  \"references\": [\"src/App.jsx (Lines 3-3) Symbol: ./components/Navbar\"]\n}\n```",
+    "identical": true
+  },
+  {
+    "id": "Q5_FEATURES",
+    "question": "What are the exact 4 core feature cards defined in FeaturesSection.jsx?",
+    "run1": "{\n  \"answer\": \"The exact 4 core feature cards defined in FeaturesSection.jsx are not explicitly stated in the provided code snippet. The code snippet only imports the FeaturesSection component from './components/FeaturesSection'. To determine the exact 4 core feature cards, additional context or code would be needed.\",\n  \"references\": [\"src/components/FeaturesSection.jsx\"]\n}",
+    "run2": "{\n  \"answer\": \"The exact 4 core feature cards defined in FeaturesSection.jsx are not explicitly stated in the provided code snippet. The code snippet only imports the FeaturesSection component from './components/FeaturesSection'. To determine the exact 4 core feature cards, additional context or code would be needed.\",\n  \"references\": [\"src/components/FeaturesSection.jsx\"]\n}",
+    "run3": "{\n  \"answer\": \"The exact 4 core feature cards defined in FeaturesSection.jsx are not explicitly stated in the provided code snippet. The code snippet only imports the FeaturesSection component from './components/FeaturesSection'. To determine the exact 4 core feature cards, additional context or code would be needed.\",\n  \"references\": [\"src/components/FeaturesSection.jsx\"]\n}",
+    "identical": true
+  }
+]

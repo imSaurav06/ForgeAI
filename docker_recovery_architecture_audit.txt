@@ -1,0 +1,1624 @@
+============================================================
+FORGEAI DOCKER RECOVERY — ARCHITECTURE AUDIT
+TIME: 2026-08-16 16:07:50
+============================================================
+
+========== 1. COMPOSE SERVICES ==========
+llm
+qdrant
+tools
+mongodb
+repository
+retrieval
+git
+agent
+evaluation
+gateway
+
+========== 2. FULL RESOLVED COMPOSE CONFIG ==========
+name: forgeaii
+services:
+  agent:
+    build:
+      context: E:\ForgeAII
+      dockerfile: Dockerfile
+    command:
+      - python
+      - -m
+      - uvicorn
+      - services.agent.app.main:app
+      - --host
+      - 0.0.0.0
+      - --port
+      - "8001"
+    container_name: forge_agent
+    depends_on:
+      git:
+        condition: service_healthy
+        required: true
+      llm:
+        condition: service_healthy
+        required: true
+      mongodb:
+        condition: service_healthy
+        required: true
+      repository:
+        condition: service_healthy
+        required: true
+      retrieval:
+        condition: service_healthy
+        required: true
+      tools:
+        condition: service_healthy
+        required: true
+    environment:
+      GIT_SERVICE_URL: http://git:8006
+      LLM_SERVICE_URL: http://llm:8002
+      MONGODB_URI: mongodb://mongodb:27017
+      REPOSITORY_SERVICE_URL: http://repository:8003
+      RETRIEVAL_SERVICE_URL: http://retrieval:8004
+      SERVICE_NAME: agent-service
+      TOOL_SERVICE_URL: http://tools:8005
+    healthcheck:
+      test:
+        - CMD
+        - curl
+        - -f
+        - http://localhost:8001/health
+      timeout: 5s
+      interval: 10s
+      retries: 5
+    networks:
+      forge_ai_network: null
+    ports:
+      - mode: ingress
+        target: 8001
+        published: "8001"
+        protocol: tcp
+    restart: unless-stopped
+    volumes:
+      - type: bind
+        source: C:/
+        target: /host_c
+        bind: {}
+      - type: bind
+        source: E:/
+        target: /host_e
+        bind: {}
+      - type: bind
+        source: F:/
+        target: /host_f
+        bind: {}
+      - type: bind
+        source: E:/ForgeAII
+        target: /app/workspace
+        bind: {}
+  evaluation:
+    build:
+      context: E:\ForgeAII
+      dockerfile: Dockerfile
+    command:
+      - python
+      - -m
+      - uvicorn
+      - services.evaluation.app.main:app
+      - --host
+      - 0.0.0.0
+      - --port
+      - "8007"
+    container_name: forge_evaluation
+    depends_on:
+      mongodb:
+        condition: service_healthy
+        required: true
+    environment:
+      AGENT_SERVICE_URL: http://agent:8001
+      MONGODB_URI: mongodb://mongodb:27017
+      SERVICE_NAME: evaluation-service
+    healthcheck:
+      test:
+        - CMD
+        - curl
+        - -f
+        - http://localhost:8007/health
+      timeout: 5s
+      interval: 10s
+      retries: 5
+    networks:
+      forge_ai_network: null
+    ports:
+      - mode: ingress
+        target: 8007
+        published: "8007"
+        protocol: tcp
+    restart: unless-stopped
+  gateway:
+    build:
+      context: E:\ForgeAII
+      dockerfile: Dockerfile
+    command:
+      - python
+      - -m
+      - uvicorn
+      - services.gateway.app.main:app
+      - --host
+      - 0.0.0.0
+      - --port
+      - "8000"
+    container_name: forge_gateway
+    depends_on:
+      agent:
+        condition: service_healthy
+        required: true
+      evaluation:
+        condition: service_healthy
+        required: true
+    environment:
+      AGENT_URL: http://agent:8001
+      EVALUATION_URL: http://evaluation:8007
+      GIT_URL: http://git:8006
+      LLM_URL: http://llm:8002
+      MONGODB_URI: mongodb://mongodb:27017
+      REPOSITORY_URL: http://repository:8003
+      RETRIEVAL_URL: http://retrieval:8004
+      SERVICE_NAME: api-gateway
+      TOOLS_URL: http://tools:8005
+    healthcheck:
+      test:
+        - CMD
+        - curl
+        - -f
+        - http://localhost:8000/health
+      timeout: 5s
+      interval: 10s
+      retries: 5
+    networks:
+      forge_ai_network: null
+    ports:
+      - mode: ingress
+        target: 8000
+        published: "8000"
+        protocol: tcp
+    restart: unless-stopped
+  git:
+    build:
+      context: E:\ForgeAII
+      dockerfile: Dockerfile
+    command:
+      - python
+      - -m
+      - uvicorn
+      - services.git.app.main:app
+      - --host
+      - 0.0.0.0
+      - --port
+      - "8006"
+    container_name: forge_git
+    environment:
+      SERVICE_NAME: git-service
+      WORKSPACE_ROOT: /app/workspace
+    healthcheck:
+      test:
+        - CMD
+        - curl
+        - -f
+        - http://localhost:8006/health
+      timeout: 5s
+      interval: 10s
+      retries: 5
+    networks:
+      forge_ai_network: null
+    ports:
+      - mode: ingress
+        target: 8006
+        published: "8006"
+        protocol: tcp
+    restart: unless-stopped
+    volumes:
+      - type: bind
+        source: C:/
+        target: /host_c
+        bind: {}
+      - type: bind
+        source: E:/
+        target: /host_e
+        bind: {}
+      - type: bind
+        source: F:/
+        target: /host_f
+        bind: {}
+      - type: bind
+        source: E:/ForgeAII
+        target: /app/workspace
+        bind: {}
+  llm:
+    build:
+      context: E:\ForgeAII
+      dockerfile: Dockerfile
+    command:
+      - python
+      - -m
+      - uvicorn
+      - services.llm.app.main:app
+      - --host
+      - 0.0.0.0
+      - --port
+      - "8002"
+    container_name: forge_llm
+    environment:
+      OLLAMA_URL: http://host.docker.internal:11434
+      SERVICE_NAME: llm-service
+    extra_hosts:
+      - host.docker.internal=host-gateway
+    healthcheck:
+      test:
+        - CMD
+        - curl
+        - -f
+        - http://localhost:8002/health
+      timeout: 5s
+      interval: 10s
+      retries: 5
+    networks:
+      forge_ai_network: null
+    ports:
+      - mode: ingress
+        target: 8002
+        published: "8002"
+        protocol: tcp
+    restart: unless-stopped
+  mongodb:
+    container_name: forge_mongodb
+    healthcheck:
+      test:
+        - CMD
+        - mongosh
+        - --eval
+        - db.adminCommand('ping')
+      timeout: 5s
+      interval: 10s
+      retries: 5
+    image: mongo:7.0
+    networks:
+      forge_ai_network: null
+    ports:
+      - mode: ingress
+        target: 27017
+        published: "27017"
+        protocol: tcp
+    restart: unless-stopped
+    volumes:
+      - type: volume
+        source: mongo_data
+        target: /data/db
+        volume: {}
+  qdrant:
+    container_name: forge_qdrant
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - bash -c 'exec 3<>/dev/tcp/127.0.0.1/6333; echo -e "GET /readyz HTTP/1.0\r\n\r\n"
+          >&3; grep -q "200" <&3'
+      timeout: 5s
+      interval: 10s
+      retries: 5
+    image: qdrant/qdrant:v1.9.0
+    networks:
+      forge_ai_network: null
+    ports:
+      - mode: ingress
+        target: 6333
+        published: "6333"
+        protocol: tcp
+    restart: unless-stopped
+    volumes:
+      - type: volume
+        source: qdrant_data
+        target: /qdrant/storage
+        volume: {}
+  repository:
+    build:
+      context: E:\ForgeAII
+      dockerfile: Dockerfile
+    command:
+      - python
+      - -m
+      - uvicorn
+      - services.repository.app.main:app
+      - --host
+      - 0.0.0.0
+      - --port
+      - "8003"
+    container_name: forge_repository
+    depends_on:
+      mongodb:
+        condition: service_healthy
+        required: true
+    environment:
+      LOG_LEVEL: INFO
+      MONGODB_URI: mongodb://mongodb:27017
+      SERVICE_NAME: repository-service
+    healthcheck:
+      test:
+        - CMD
+        - curl
+        - -f
+        - http://localhost:8003/health
+      timeout: 5s
+      interval: 10s
+      retries: 5
+    networks:
+      forge_ai_network: null
+    ports:
+      - mode: ingress
+        target: 8003
+        published: "8003"
+        protocol: tcp
+    restart: unless-stopped
+    volumes:
+      - type: bind
+        source: C:/
+        target: /host_c
+        bind: {}
+      - type: bind
+        source: E:/
+        target: /host_e
+        bind: {}
+      - type: bind
+        source: F:/
+        target: /host_f
+        bind: {}
+      - type: bind
+        source: E:/ForgeAII
+        target: /app/workspace
+        bind: {}
+  retrieval:
+    build:
+      context: E:\ForgeAII
+      dockerfile: Dockerfile
+    command:
+      - python
+      - -m
+      - uvicorn
+      - services.retrieval.app.main:app
+      - --host
+      - 0.0.0.0
+      - --port
+      - "8004"
+    container_name: forge_retrieval
+    depends_on:
+      qdrant:
+        condition: service_healthy
+        required: true
+      repository:
+        condition: service_healthy
+        required: true
+    environment:
+      QDRANT_HOST: qdrant
+      QDRANT_PORT: "6333"
+      REPOSITORY_SERVICE_URL: http://repository:8003
+      SERVICE_NAME: retrieval-service
+    healthcheck:
+      test:
+        - CMD
+        - curl
+        - -f
+        - http://localhost:8004/health
+      timeout: 5s
+      interval: 10s
+      retries: 5
+      start_period: 40s
+    networks:
+      forge_ai_network: null
+    ports:
+      - mode: ingress
+        target: 8004
+        published: "8004"
+        protocol: tcp
+    restart: unless-stopped
+    volumes:
+      - type: bind
+        source: C:/
+        target: /host_c
+        bind: {}
+      - type: bind
+        source: E:/
+        target: /host_e
+        bind: {}
+      - type: bind
+        source: F:/
+        target: /host_f
+        bind: {}
+      - type: bind
+        source: E:/ForgeAII
+        target: /app/workspace
+        bind: {}
+  tools:
+    build:
+      context: E:\ForgeAII
+      dockerfile: Dockerfile
+    command:
+      - python
+      - -m
+      - uvicorn
+      - services.tools.app.main:app
+      - --host
+      - 0.0.0.0
+      - --port
+      - "8005"
+    container_name: forge_tools
+    environment:
+      SERVICE_NAME: tool-service
+      WORKSPACE_ROOT: /app/workspace
+    healthcheck:
+      test:
+        - CMD
+        - curl
+        - -f
+        - http://localhost:8005/health
+      timeout: 5s
+      interval: 10s
+      retries: 5
+    networks:
+      forge_ai_network: null
+    ports:
+      - mode: ingress
+        target: 8005
+        published: "8005"
+        protocol: tcp
+    restart: unless-stopped
+    volumes:
+      - type: bind
+        source: E:/ForgeAII
+        target: /app/workspace
+        bind: {}
+networks:
+  forge_ai_network:
+    name: forgeaii_forge_ai_network
+    driver: bridge
+volumes:
+  mongo_data:
+    name: forgeaii_mongo_data
+  qdrant_data:
+    name: forgeaii_qdrant_data
+
+========== 3. BUILD CONTEXTS / DOCKERFILES ==========
+
+  services:
+    agent:
+>     build:
+>       context: E:\ForgeAII
+>       dockerfile: Dockerfile
+      command:
+        - python
+        - -m
+        - uvicorn
+          bind: {}
+    evaluation:
+>     build:
+>       context: E:\ForgeAII
+>       dockerfile: Dockerfile
+      command:
+        - python
+        - -m
+        - uvicorn
+      restart: unless-stopped
+    gateway:
+>     build:
+>       context: E:\ForgeAII
+>       dockerfile: Dockerfile
+      command:
+        - python
+        - -m
+        - uvicorn
+      restart: unless-stopped
+    git:
+>     build:
+>       context: E:\ForgeAII
+>       dockerfile: Dockerfile
+      command:
+        - python
+        - -m
+        - uvicorn
+          bind: {}
+    llm:
+>     build:
+>       context: E:\ForgeAII
+>       dockerfile: Dockerfile
+      command:
+        - python
+        - -m
+        - uvicorn
+        interval: 10s
+        retries: 5
+>     image: mongo:7.0
+      networks:
+        forge_ai_network: null
+      ports:
+        - mode: ingress
+        interval: 10s
+        retries: 5
+>     image: qdrant/qdrant:v1.9.0
+      networks:
+        forge_ai_network: null
+      ports:
+        - mode: ingress
+          volume: {}
+    repository:
+>     build:
+>       context: E:\ForgeAII
+>       dockerfile: Dockerfile
+      command:
+        - python
+        - -m
+        - uvicorn
+          bind: {}
+    retrieval:
+>     build:
+>       context: E:\ForgeAII
+>       dockerfile: Dockerfile
+      command:
+        - python
+        - -m
+        - uvicorn
+          bind: {}
+    tools:
+>     build:
+>       context: E:\ForgeAII
+>       dockerfile: Dockerfile
+      command:
+        - python
+        - -m
+        - uvicorn
+
+
+
+========== 4. PORT MAPPINGS ==========
+
+>     ports:
+        - mode: ingress
+          target: 8001
+          published: "8001"
+          protocol: tcp
+      restart: unless-stopped
+>     ports:
+        - mode: ingress
+          target: 8007
+          published: "8007"
+          protocol: tcp
+      restart: unless-stopped
+>     ports:
+        - mode: ingress
+          target: 8000
+          published: "8000"
+          protocol: tcp
+      restart: unless-stopped
+>     ports:
+        - mode: ingress
+          target: 8006
+          published: "8006"
+          protocol: tcp
+      restart: unless-stopped
+>     ports:
+        - mode: ingress
+          target: 8002
+          published: "8002"
+          protocol: tcp
+      restart: unless-stopped
+>     ports:
+        - mode: ingress
+          target: 27017
+          published: "27017"
+          protocol: tcp
+      restart: unless-stopped
+>     ports:
+        - mode: ingress
+          target: 6333
+          published: "6333"
+          protocol: tcp
+      restart: unless-stopped
+>     ports:
+        - mode: ingress
+          target: 8003
+          published: "8003"
+          protocol: tcp
+      restart: unless-stopped
+>     ports:
+        - mode: ingress
+          target: 8004
+          published: "8004"
+          protocol: tcp
+      restart: unless-stopped
+>     ports:
+        - mode: ingress
+          target: 8005
+          published: "8005"
+          protocol: tcp
+      restart: unless-stopped
+
+
+
+========== 5. VOLUMES ==========
+
+>     volumes:
+        - type: bind
+          source: C:/
+          target: /host_c
+          bind: {}
+        - type: bind
+          source: E:/
+          target: /host_e
+          bind: {}
+>     volumes:
+        - type: bind
+          source: C:/
+          target: /host_c
+          bind: {}
+        - type: bind
+          source: E:/
+          target: /host_e
+          bind: {}
+>     volumes:
+        - type: volume
+          source: mongo_data
+          target: /data/db
+          volume: {}
+    qdrant:
+      container_name: forge_qdrant
+      healthcheck:
+        test:
+>     volumes:
+        - type: volume
+          source: qdrant_data
+          target: /qdrant/storage
+          volume: {}
+    repository:
+      build:
+        context: E:\ForgeAII
+        dockerfile: Dockerfile
+>     volumes:
+        - type: bind
+          source: C:/
+          target: /host_c
+          bind: {}
+        - type: bind
+          source: E:/
+          target: /host_e
+          bind: {}
+>     volumes:
+        - type: bind
+          source: C:/
+          target: /host_c
+          bind: {}
+        - type: bind
+          source: E:/
+          target: /host_e
+          bind: {}
+>     volumes:
+        - type: bind
+          source: E:/ForgeAII
+          target: /app/workspace
+          bind: {}
+  networks:
+    forge_ai_network:
+      name: forgeaii_forge_ai_network
+      driver: bridge
+> volumes:
+    mongo_data:
+      name: forgeaii_mongo_data
+    qdrant_data:
+      name: forgeaii_qdrant_data
+
+
+
+========== 6. ENVIRONMENT REFERENCES — NAMES ONLY ==========
+
+  services:
+>   agent:
+      build:
+        context: E:\ForgeAII
+        dockerfile: Dockerfile
+        - uvicorn
+>       - services.agent.app.main:app
+        - --host
+        - 0.0.0.0
+        - --port
+        - "8001"
+>     container_name: forge_agent
+      depends_on:
+        git:
+          condition: service_healthy
+          required: true
+>       llm:
+          condition: service_healthy
+          required: true
+>       mongodb:
+          condition: service_healthy
+          required: true
+>       repository:
+          condition: service_healthy
+          required: true
+>       retrieval:
+          condition: service_healthy
+          required: true
+>       tools:
+          condition: service_healthy
+          required: true
+>     environment:
+        GIT_SERVICE_URL: http://git:8006
+>       LLM_SERVICE_URL: http://llm:8002
+>       MONGODB_URI: mongodb://mongodb:27017
+>       REPOSITORY_SERVICE_URL: http://repository:8003
+>       RETRIEVAL_SERVICE_URL: http://retrieval:8004
+>       SERVICE_NAME: agent-service
+>       TOOL_SERVICE_URL: http://tools:8005
+      healthcheck:
+        test:
+          - CMD
+      depends_on:
+>       mongodb:
+          condition: service_healthy
+          required: true
+>     environment:
+>       AGENT_SERVICE_URL: http://agent:8001
+>       MONGODB_URI: mongodb://mongodb:27017
+        SERVICE_NAME: evaluation-service
+      healthcheck:
+        test:
+      restart: unless-stopped
+>   gateway:
+      build:
+        context: E:\ForgeAII
+        dockerfile: Dockerfile
+        - uvicorn
+>       - services.gateway.app.main:app
+        - --host
+        - 0.0.0.0
+        - --port
+        - "8000"
+>     container_name: forge_gateway
+      depends_on:
+>       agent:
+          condition: service_healthy
+          required: true
+        evaluation:
+          required: true
+>     environment:
+>       AGENT_URL: http://agent:8001
+        EVALUATION_URL: http://evaluation:8007
+        GIT_URL: http://git:8006
+>       LLM_URL: http://llm:8002
+>       MONGODB_URI: mongodb://mongodb:27017
+>       REPOSITORY_URL: http://repository:8003
+>       RETRIEVAL_URL: http://retrieval:8004
+>       SERVICE_NAME: api-gateway
+>       TOOLS_URL: http://tools:8005
+      healthcheck:
+        test:
+          - CMD
+      container_name: forge_git
+>     environment:
+        SERVICE_NAME: git-service
+        WORKSPACE_ROOT: /app/workspace
+      healthcheck:
+          bind: {}
+>   llm:
+      build:
+        context: E:\ForgeAII
+        dockerfile: Dockerfile
+        - uvicorn
+>       - services.llm.app.main:app
+        - --host
+        - 0.0.0.0
+        - --port
+        - "8002"
+>     container_name: forge_llm
+>     environment:
+>       OLLAMA_URL: http://host.docker.internal:11434
+>       SERVICE_NAME: llm-service
+      extra_hosts:
+>       - host.docker.internal=host-gateway
+      healthcheck:
+        test:
+          - CMD
+      restart: unless-stopped
+>   mongodb:
+>     container_name: forge_mongodb
+      healthcheck:
+        test:
+          - CMD
+>         - mongosh
+          - --eval
+          - db.adminCommand('ping')
+        timeout: 5s
+        retries: 5
+>     image: mongo:7.0
+      networks:
+        forge_ai_network: null
+      ports:
+        - type: volume
+>         source: mongo_data
+          target: /data/db
+          volume: {}
+>   qdrant:
+>     container_name: forge_qdrant
+      healthcheck:
+        test:
+          - CMD-SHELL
+        retries: 5
+>     image: qdrant/qdrant:v1.9.0
+      networks:
+        forge_ai_network: null
+      ports:
+        - type: volume
+>         source: qdrant_data
+>         target: /qdrant/storage
+          volume: {}
+>   repository:
+      build:
+        context: E:\ForgeAII
+        dockerfile: Dockerfile
+        - uvicorn
+>       - services.repository.app.main:app
+        - --host
+        - 0.0.0.0
+        - --port
+        - "8003"
+>     container_name: forge_repository
+      depends_on:
+>       mongodb:
+          condition: service_healthy
+          required: true
+>     environment:
+        LOG_LEVEL: INFO
+>       MONGODB_URI: mongodb://mongodb:27017
+>       SERVICE_NAME: repository-service
+      healthcheck:
+        test:
+          - CMD
+          bind: {}
+>   retrieval:
+      build:
+        context: E:\ForgeAII
+        dockerfile: Dockerfile
+        - uvicorn
+>       - services.retrieval.app.main:app
+        - --host
+        - 0.0.0.0
+        - --port
+        - "8004"
+>     container_name: forge_retrieval
+      depends_on:
+>       qdrant:
+          condition: service_healthy
+          required: true
+>       repository:
+          condition: service_healthy
+          required: true
+>     environment:
+>       QDRANT_HOST: qdrant
+>       QDRANT_PORT: "6333"
+>       REPOSITORY_SERVICE_URL: http://repository:8003
+>       SERVICE_NAME: retrieval-service
+      healthcheck:
+        test:
+          - CMD
+          bind: {}
+>   tools:
+      build:
+        context: E:\ForgeAII
+        dockerfile: Dockerfile
+        - uvicorn
+>       - services.tools.app.main:app
+        - --host
+        - 0.0.0.0
+        - --port
+        - "8005"
+>     container_name: forge_tools
+>     environment:
+        SERVICE_NAME: tool-service
+        WORKSPACE_ROOT: /app/workspace
+      healthcheck:
+  volumes:
+>   mongo_data:
+>     name: forgeaii_mongo_data
+>   qdrant_data:
+>     name: forgeaii_qdrant_data
+
+
+
+========== 7. NETWORK CONFIG ==========
+
+>     networks:
+        forge_ai_network: null
+      ports:
+        - mode: ingress
+          target: 8001
+          published: "8001"
+          protocol: tcp
+      restart: unless-stopped
+      volumes:
+        - type: bind
+          source: C:/
+          target: /host_c
+          bind: {}
+>     networks:
+        forge_ai_network: null
+      ports:
+        - mode: ingress
+          target: 8007
+          published: "8007"
+          protocol: tcp
+      restart: unless-stopped
+    gateway:
+      build:
+        context: E:\ForgeAII
+        dockerfile: Dockerfile
+      command:
+>     networks:
+        forge_ai_network: null
+      ports:
+        - mode: ingress
+          target: 8000
+          published: "8000"
+          protocol: tcp
+      restart: unless-stopped
+    git:
+      build:
+        context: E:\ForgeAII
+        dockerfile: Dockerfile
+      command:
+>     networks:
+        forge_ai_network: null
+      ports:
+        - mode: ingress
+          target: 8006
+          published: "8006"
+          protocol: tcp
+      restart: unless-stopped
+      volumes:
+        - type: bind
+          source: C:/
+          target: /host_c
+          bind: {}
+>     networks:
+        forge_ai_network: null
+      ports:
+        - mode: ingress
+          target: 8002
+          published: "8002"
+          protocol: tcp
+      restart: unless-stopped
+    mongodb:
+      container_name: forge_mongodb
+      healthcheck:
+        test:
+          - CMD
+>     networks:
+        forge_ai_network: null
+      ports:
+        - mode: ingress
+          target: 27017
+          published: "27017"
+          protocol: tcp
+      restart: unless-stopped
+      volumes:
+        - type: volume
+          source: mongo_data
+          target: /data/db
+          volume: {}
+>     networks:
+        forge_ai_network: null
+      ports:
+        - mode: ingress
+          target: 6333
+          published: "6333"
+          protocol: tcp
+      restart: unless-stopped
+      volumes:
+        - type: volume
+          source: qdrant_data
+          target: /qdrant/storage
+          volume: {}
+>     networks:
+        forge_ai_network: null
+      ports:
+        - mode: ingress
+          target: 8003
+          published: "8003"
+          protocol: tcp
+      restart: unless-stopped
+      volumes:
+        - type: bind
+          source: C:/
+          target: /host_c
+          bind: {}
+>     networks:
+        forge_ai_network: null
+      ports:
+        - mode: ingress
+          target: 8004
+          published: "8004"
+          protocol: tcp
+      restart: unless-stopped
+      volumes:
+        - type: bind
+          source: C:/
+          target: /host_c
+          bind: {}
+>     networks:
+        forge_ai_network: null
+      ports:
+        - mode: ingress
+          target: 8005
+          published: "8005"
+          protocol: tcp
+      restart: unless-stopped
+      volumes:
+        - type: bind
+          source: E:/ForgeAII
+          target: /app/workspace
+          bind: {}
+> networks:
+    forge_ai_network:
+      name: forgeaii_forge_ai_network
+      driver: bridge
+  volumes:
+    mongo_data:
+      name: forgeaii_mongo_data
+    qdrant_data:
+      name: forgeaii_qdrant_data
+
+
+
+========== 8. HEALTHCHECKS ==========
+
+>     healthcheck:
+        test:
+          - CMD
+          - curl
+          - -f
+          - http://localhost:8001/health
+        timeout: 5s
+        interval: 10s
+        retries: 5
+      networks:
+        forge_ai_network: null
+>     healthcheck:
+        test:
+          - CMD
+          - curl
+          - -f
+          - http://localhost:8007/health
+        timeout: 5s
+        interval: 10s
+        retries: 5
+      networks:
+        forge_ai_network: null
+>     healthcheck:
+        test:
+          - CMD
+          - curl
+          - -f
+          - http://localhost:8000/health
+        timeout: 5s
+        interval: 10s
+        retries: 5
+      networks:
+        forge_ai_network: null
+>     healthcheck:
+        test:
+          - CMD
+          - curl
+          - -f
+          - http://localhost:8006/health
+        timeout: 5s
+        interval: 10s
+        retries: 5
+      networks:
+        forge_ai_network: null
+>     healthcheck:
+        test:
+          - CMD
+          - curl
+          - -f
+          - http://localhost:8002/health
+        timeout: 5s
+        interval: 10s
+        retries: 5
+      networks:
+        forge_ai_network: null
+>     healthcheck:
+        test:
+          - CMD
+          - mongosh
+          - --eval
+          - db.adminCommand('ping')
+        timeout: 5s
+        interval: 10s
+        retries: 5
+      image: mongo:7.0
+      networks:
+>     healthcheck:
+        test:
+          - CMD-SHELL
+          - bash -c 'exec 3<>/dev/tcp/127.0.0.1/6333; echo -e "GET /readyz HTTP/1.0\r\n\r\n"
+            >&3; grep -q "200" <&3'
+        timeout: 5s
+        interval: 10s
+        retries: 5
+      image: qdrant/qdrant:v1.9.0
+      networks:
+        forge_ai_network: null
+>     healthcheck:
+        test:
+          - CMD
+          - curl
+          - -f
+          - http://localhost:8003/health
+        timeout: 5s
+        interval: 10s
+        retries: 5
+      networks:
+        forge_ai_network: null
+>     healthcheck:
+        test:
+          - CMD
+          - curl
+          - -f
+          - http://localhost:8004/health
+        timeout: 5s
+        interval: 10s
+        retries: 5
+        start_period: 40s
+      networks:
+>     healthcheck:
+        test:
+          - CMD
+          - curl
+          - -f
+          - http://localhost:8005/health
+        timeout: 5s
+        interval: 10s
+        retries: 5
+      networks:
+        forge_ai_network: null
+
+
+
+========== 9. DEPENDS_ON ==========
+
+>     depends_on:
+        git:
+          condition: service_healthy
+          required: true
+        llm:
+          condition: service_healthy
+          required: true
+        mongodb:
+          condition: service_healthy
+          required: true
+        repository:
+          condition: service_healthy
+          required: true
+>     depends_on:
+        mongodb:
+          condition: service_healthy
+          required: true
+      environment:
+        AGENT_SERVICE_URL: http://agent:8001
+        MONGODB_URI: mongodb://mongodb:27017
+        SERVICE_NAME: evaluation-service
+      healthcheck:
+        test:
+          - CMD
+          - curl
+          - -f
+>     depends_on:
+        agent:
+          condition: service_healthy
+          required: true
+        evaluation:
+          condition: service_healthy
+          required: true
+      environment:
+        AGENT_URL: http://agent:8001
+        EVALUATION_URL: http://evaluation:8007
+        GIT_URL: http://git:8006
+        LLM_URL: http://llm:8002
+        MONGODB_URI: mongodb://mongodb:27017
+>     depends_on:
+        mongodb:
+          condition: service_healthy
+          required: true
+      environment:
+        LOG_LEVEL: INFO
+        MONGODB_URI: mongodb://mongodb:27017
+        SERVICE_NAME: repository-service
+      healthcheck:
+        test:
+          - CMD
+          - curl
+          - -f
+>     depends_on:
+        qdrant:
+          condition: service_healthy
+          required: true
+        repository:
+          condition: service_healthy
+          required: true
+      environment:
+        QDRANT_HOST: qdrant
+        QDRANT_PORT: "6333"
+        REPOSITORY_SERVICE_URL: http://repository:8003
+        SERVICE_NAME: retrieval-service
+      healthcheck:
+
+
+
+========== 10. HOST ENV FILE — VARIABLE NAMES ONLY ==========
+ENVIRONMENT=<REDACTED>
+LOG_LEVEL=<REDACTED>
+SECRET_KEY=<REDACTED>
+JWT_SECRET=<REDACTED>
+GATEWAY_HOST=<REDACTED>
+GATEWAY_PORT=<REDACTED>
+API_V1_PREFIX=<REDACTED>
+AGENT_URL=<REDACTED>
+LLM_URL=<REDACTED>
+REPOSITORY_URL=<REDACTED>
+RETRIEVAL_URL=<REDACTED>
+TOOLS_URL=<REDACTED>
+GIT_URL=<REDACTED>
+EVALUATION_URL=<REDACTED>
+MONGODB_URI=<REDACTED>
+MONGODB_DATABASE=<REDACTED>
+QDRANT_HOST=<REDACTED>
+QDRANT_PORT=<REDACTED>
+QDRANT_COLLECTION_NAME=<REDACTED>
+OLLAMA_URL=<REDACTED>
+DEFAULT_QUALITY_MODEL=<REDACTED>
+DEFAULT_FAST_MODEL=<REDACTED>
+WORKSPACE_ROOT=<REDACTED>
+
+========== 11. DOCKERFILE ==========
+# Production Multi-Service Dockerfile for ForgeAI Platform
+FROM python:3.12-slim as base
+
+# Prevent Python from writing pyc files to disk and disable buffering
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PIP_NO_CACHE_DIR=off \
+    PIP_DISABLE_PIP_VERSION_CHECK=on
+
+# Set working directory
+WORKDIR /app
+
+# Install system dependencies (git, curl)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    git \
+    curl \
+    build-essential \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy pyproject.toml and dependencies
+COPY pyproject.toml ./
+RUN pip install --no-cache-dir .
+
+# Copy application source code
+COPY shared /app/shared
+COPY services /app/services
+COPY docs /app/docs
+
+# Default port exposure
+EXPOSE 8000 8001 8002 8003 8004 8005 8006 8007
+
+# Default entrypoint for Gateway Service
+CMD ["python", "-m", "uvicorn", "services.gateway.app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+
+
+========== 12. COMPOSE FILE ==========
+networks:
+  forge_ai_network:
+    driver: bridge
+
+volumes:
+  mongo_data:
+  qdrant_data:
+
+services:
+  # Datastores & Runtime Engines
+  mongodb:
+    image: mongo:7.0
+    container_name: forge_mongodb
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - forge_ai_network
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  qdrant:
+    image: qdrant/qdrant:v1.9.0
+    container_name: forge_qdrant
+    restart: unless-stopped
+    ports:
+      - "6333:6333"
+    volumes:
+      - qdrant_data:/qdrant/storage
+    networks:
+      - forge_ai_network
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c 'exec 3<>/dev/tcp/127.0.0.1/6333; echo -e \"GET /readyz HTTP/1.0\\r\\n\\r\\n\" >&3; grep -q \"200\" <&3'"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Core Backend Microservices
+  repository:
+    build: .
+    container_name: forge_repository
+    command: python -m uvicorn services.repository.app.main:app --host 0.0.0.0 --port 8003
+    restart: unless-stopped
+    ports:
+      - "8003:8003"
+    environment:
+      - SERVICE_NAME=repository-service
+      - MONGODB_URI=mongodb://mongodb:27017
+      - LOG_LEVEL=INFO
+    volumes:
+      - C:/:/host_c
+      - E:/:/host_e
+      - F:/:/host_f
+      - E:/ForgeAII:/app/workspace
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    networks:
+      - forge_ai_network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8003/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  retrieval:
+    build: .
+    container_name: forge_retrieval
+    command: python -m uvicorn services.retrieval.app.main:app --host 0.0.0.0 --port 8004
+    restart: unless-stopped
+    ports:
+      - "8004:8004"
+    environment:
+      - SERVICE_NAME=retrieval-service
+      - QDRANT_HOST=qdrant
+      - QDRANT_PORT=6333
+      - REPOSITORY_SERVICE_URL=http://repository:8003
+    volumes:
+      - C:/:/host_c
+      - E:/:/host_e
+      - F:/:/host_f
+      - E:/ForgeAII:/app/workspace
+    depends_on:
+      qdrant:
+        condition: service_healthy
+      repository:
+        condition: service_healthy
+    networks:
+      - forge_ai_network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8004/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 40s
+
+  llm:
+    build: .
+    container_name: forge_llm
+    command: python -m uvicorn services.llm.app.main:app --host 0.0.0.0 --port 8002
+    restart: unless-stopped
+    ports:
+      - "8002:8002"
+    environment:
+      - SERVICE_NAME=llm-service
+      - OLLAMA_URL=http://host.docker.internal:11434
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - forge_ai_network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8002/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  tools:
+    build: .
+    container_name: forge_tools
+    command: python -m uvicorn services.tools.app.main:app --host 0.0.0.0 --port 8005
+    restart: unless-stopped
+    ports:
+      - "8005:8005"
+    environment:
+      - SERVICE_NAME=tool-service
+      - WORKSPACE_ROOT=/app/workspace
+    volumes:
+      - E:/ForgeAII:/app/workspace
+    networks:
+      - forge_ai_network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8005/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  git:
+    build: .
+    container_name: forge_git
+    command: python -m uvicorn services.git.app.main:app --host 0.0.0.0 --port 8006
+    restart: unless-stopped
+    ports:
+      - "8006:8006"
+    environment:
+      - SERVICE_NAME=git-service
+      - WORKSPACE_ROOT=/app/workspace
+    volumes:
+      - C:/:/host_c
+      - E:/:/host_e
+      - F:/:/host_f
+      - E:/ForgeAII:/app/workspace
+    networks:
+      - forge_ai_network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8006/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  evaluation:
+    build: .
+    container_name: forge_evaluation
+    command: python -m uvicorn services.evaluation.app.main:app --host 0.0.0.0 --port 8007
+    restart: unless-stopped
+    ports:
+      - "8007:8007"
+    environment:
+      - SERVICE_NAME=evaluation-service
+      - MONGODB_URI=mongodb://mongodb:27017
+      - AGENT_SERVICE_URL=http://agent:8001
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    networks:
+      - forge_ai_network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8007/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Orchestrator & Entrypoint Gateway
+  agent:
+    build: .
+    container_name: forge_agent
+    command: python -m uvicorn services.agent.app.main:app --host 0.0.0.0 --port 8001
+    restart: unless-stopped
+    ports:
+      - "8001:8001"
+    environment:
+      - SERVICE_NAME=agent-service
+      - MONGODB_URI=mongodb://mongodb:27017
+      - REPOSITORY_SERVICE_URL=http://repository:8003
+      - RETRIEVAL_SERVICE_URL=http://retrieval:8004
+      - LLM_SERVICE_URL=http://llm:8002
+      - TOOL_SERVICE_URL=http://tools:8005
+      - GIT_SERVICE_URL=http://git:8006
+    volumes:
+      - C:/:/host_c
+      - E:/:/host_e
+      - F:/:/host_f
+      - E:/ForgeAII:/app/workspace
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      repository:
+        condition: service_healthy
+      retrieval:
+        condition: service_healthy
+      llm:
+        condition: service_healthy
+      tools:
+        condition: service_healthy
+      git:
+        condition: service_healthy
+    networks:
+      - forge_ai_network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  gateway:
+    build: .
+    container_name: forge_gateway
+    command: python -m uvicorn services.gateway.app.main:app --host 0.0.0.0 --port 8000
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - SERVICE_NAME=api-gateway
+      - MONGODB_URI=mongodb://mongodb:27017
+      - AGENT_URL=http://agent:8001
+      - LLM_URL=http://llm:8002
+      - REPOSITORY_URL=http://repository:8003
+      - RETRIEVAL_URL=http://retrieval:8004
+      - TOOLS_URL=http://tools:8005
+      - GIT_URL=http://git:8006
+      - EVALUATION_URL=http://evaluation:8007
+    depends_on:
+      agent:
+        condition: service_healthy
+      evaluation:
+        condition: service_healthy
+    networks:
+      - forge_ai_network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+
+========== 13. FORGEAI SERVICE DIRECTORIES ==========
+
+Name        FullName
+----        --------
+__pycache__ E:\ForgeAII\services\__pycache__
+agent       E:\ForgeAII\services\agent
+evaluation  E:\ForgeAII\services\evaluation
+gateway     E:\ForgeAII\services\gateway
+git         E:\ForgeAII\services\git
+llm         E:\ForgeAII\services\llm
+repository  E:\ForgeAII\services\repository
+retrieval   E:\ForgeAII\services\retrieval
+tools       E:\ForgeAII\services\tools
+
+
+
+========== 14. SERVICE DOCKERFILES ==========
+
+
+========== 15. LOCAL DATA DIRECTORIES ==========
+
+Name                            FullName
+----                            --------
+.mongo_data                     E:\ForgeAII\.mongo_data
+tmp_b03_verification_workspaces E:\ForgeAII\tmp_b03_verification_workspaces
+workspace                       E:\ForgeAII\workspace
+
+
+
+========== 16. CURRENT DOCKER STATE ==========
+CONTAINER ID   IMAGE     COMMAND   CREATED   STATUS    PORTS     NAMES
+IMAGE   ID             DISK USAGE   CONTENT SIZE   EXTRA
+DRIVER    VOLUME NAME
+NETWORK ID     NAME      DRIVER    SCOPE
+c559eeb3fc17   bridge    bridge    local
+75930a1460df   host      host      local
+0e7a4cf669c8   none      null      local
+
+============================================================
+END FORGEAI DOCKER RECOVERY AUDIT
+NO CONTAINERS STARTED
+NO IMAGES BUILT
+NO VOLUMES CREATED/DELETED
+NO FORGEAI SOURCE MODIFIED
+============================================================

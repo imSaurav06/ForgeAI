@@ -1,0 +1,217 @@
+STAGE 2A REGRESSION
+Exit Code: 1
+Duration: 143.79s
+
+STDOUT:
+============================= test session starts =============================
+platform win32 -- Python 3.12.1, pytest-9.1.1, pluggy-1.6.0 -- C:\Program Files\Python312\python.exe
+cachedir: .pytest_cache
+rootdir: e:\ForgeAII
+configfile: pyproject.toml
+plugins: anyio-4.2.0, asyncio-1.4.0
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collecting ... collected 81 items
+
+tests/test_mongodb_real.py::test_mongodb_connection_and_indexes PASSED   [  1%]
+tests/test_mongodb_real.py::test_mongo_project_repository PASSED         [  2%]
+tests/test_mongodb_real.py::test_mongo_repository_metadata_repository PASSED [  3%]
+tests/test_mongodb_real.py::test_mongo_agent_run_and_step_repository PASSED [  4%]
+tests/test_mongodb_real.py::test_mongo_evaluation_repository PASSED      [  6%]
+tests/test_mongodb_real.py::test_restart_reinitialization_persistence PASSED [  7%]
+tests/test_mongodb_real.py::test_mongodb_unreachable_error_handling PASSED [  8%]
+tests/test_ollama_real.py::test_ollama_server_reachable PASSED           [  9%]
+tests/test_ollama_real.py::test_models_configuration PASSED              [ 11%]
+tests/test_ollama_real.py::test_model_switching PASSED                   [ 12%]
+tests/test_ollama_real.py::test_prompt_template_compilation PASSED       [ 13%]
+tests/test_ollama_real.py::test_no_fake_fallback_on_unreachable_ollama PASSED [ 14%]
+tests/test_ollama_real.py::test_llm_health_status PASSED                 [ 16%]
+tests/test_ollama_real.py::test_real_ollama_generation_if_installed FAILED [ 17%]
+tests/test_qdrant_real.py::test_qdrant_collection_lifecycle PASSED       [ 18%]
+tests/test_qdrant_real.py::test_qdrant_deterministic_point_id PASSED     [ 19%]
+tests/test_qdrant_real.py::test_qdrant_point_upsert_and_search PASSED    [ 20%]
+tests/test_qdrant_real.py::test_qdrant_point_deletion PASSED             [ 22%]
+tests/test_qdrant_real.py::test_qdrant_health_check PASSED               [ 23%]
+tests/test_qdrant_real.py::test_qdrant_unreachable_error_handling PASSED [ 24%]
+tests/test_real_embeddings.py::test_real_embedding_model_load_and_dimension PASSED [ 25%]
+tests/test_real_embeddings.py::test_single_text_embedding PASSED         [ 27%]
+tests/test_real_embeddings.py::test_batch_embedding PASSED               [ 28%]
+tests/test_real_embeddings.py::test_embedding_determinism_and_differentiation PASSED [ 29%]
+tests/test_real_embeddings.py::test_semantic_ranking_quality PASSED      [ 30%]
+tests/test_real_embeddings.py::test_real_qdrant_and_real_embeddings_integration PASSED [ 32%]
+tests/test_repository_service.py::test_ignore_engine PASSED              [ 33%]
+tests/test_repository_service.py::test_language_detector PASSED          [ 34%]
+tests/test_repository_service.py::test_ast_symbol_parser PASSED          [ 35%]
+tests/test_repository_service.py::test_dependency_graph_builder PASSED   [ 37%]
+tests/test_repository_service.py::test_incremental_indexer PASSED        [ 38%]
+tests/test_repository_service.py::test_repo_scanner PASSED               [ 39%]
+tests/test_repository_service.py::test_repository_api_endpoints PASSED   [ 40%]
+tests/test_tree_sitter_parser.py::test_parser_backend_is_tree_sitter PASSED [ 41%]
+tests/test_tree_sitter_parser.py::test_tree_sitter_parse_produces_real_tree PASSED [ 43%]
+tests/test_tree_sitter_parser.py::test_tree_sitter_imports_are_real PASSED [ 44%]
+tests/test_tree_sitter_parser.py::test_python_class_extraction PASSED    [ 45%]
+tests/test_tree_sitter_parser.py::test_python_function_extraction PASSED [ 46%]
+tests/test_tree_sitter_parser.py::test_python_method_extraction PASSED   [ 48%]
+tests/test_tree_sitter_parser.py::test_python_imports PASSED             [ 49%]
+tests/test_tree_sitter_parser.py::test_python_parent_symbol PASSED       [ 50%]
+tests/test_tree_sitter_parser.py::test_python_exact_line_ranges PASSED   [ 51%]
+tests/test_tree_sitter_parser.py::test_js_class_extraction PASSED        [ 53%]
+tests/test_tree_sitter_parser.py::test_js_function_extraction PASSED     [ 54%]
+tests/test_tree_sitter_parser.py::test_js_method_extraction PASSED       [ 55%]
+tests/test_tree_sitter_parser.py::test_js_imports PASSED                 [ 56%]
+tests/test_tree_sitter_parser.py::test_js_exports PASSED                 [ 58%]
+tests/test_tree_sitter_parser.py::test_ts_interface_extraction PASSED    [ 59%]
+tests/test_tree_sitter_parser.py::test_ts_type_alias_extraction PASSED   [ 60%]
+tests/test_tree_sitter_parser.py::test_ts_enum_extraction PASSED         [ 61%]
+tests/test_tree_sitter_parser.py::test_ts_imports PASSED                 [ 62%]
+tests/test_tree_sitter_parser.py::test_ts_exports PASSED                 [ 64%]
+tests/test_tree_sitter_parser.py::test_tsx_component_extraction PASSED   [ 65%]
+tests/test_tree_sitter_parser.py::test_tsx_interface_extraction PASSED   [ 66%]
+tests/test_tree_sitter_parser.py::test_jsx_via_js_extension PASSED       [ 67%]
+tests/test_tree_sitter_parser.py::test_nested_class_methods PASSED       [ 69%]
+tests/test_tree_sitter_parser.py::test_malformed_python PASSED           [ 70%]
+tests/test_tree_sitter_parser.py::test_malformed_javascript PASSED       [ 71%]
+tests/test_tree_sitter_parser.py::test_parse_error_count PASSED          [ 72%]
+tests/test_tree_sitter_parser.py::test_unsupported_language_returns_empty PASSED [ 74%]
+tests/test_tree_sitter_parser.py::test_unsupported_extension_parse_source PASSED [ 75%]
+tests/test_tree_sitter_parser.py::test_language_registry_supported PASSED [ 76%]
+tests/test_tree_sitter_parser.py::test_extension_mapping PASSED          [ 77%]
+tests/test_tree_sitter_parser.py::test_get_language_returns_language_object PASSED [ 79%]
+tests/test_tree_sitter_parser.py::test_dependency_extraction_compatibility PASSED [ 80%]
+tests/test_tree_sitter_parser.py::test_js_imports_feed_dependency_graph PASSED [ 81%]
+tests/test_tree_sitter_parser.py::test_incremental_indexing_with_tree_sitter PASSED [ 82%]
+tests/test_tree_sitter_parser.py::test_deleted_file_symbol_cleanup PASSED [ 83%]
+tests/test_tree_sitter_parser.py::test_multi_language_fixture PASSED     [ 85%]
+tests/test_tree_sitter_parser.py::test_gitignore_excludes_still_work PASSED [ 86%]
+tests/test_tree_sitter_parser.py::test_symbols_have_column_info PASSED   [ 87%]
+tests/test_tree_sitter_parser.py::test_python_decorators PASSED          [ 88%]
+tests/test_llm_rag_core.py::test_ollama_adapter PASSED                   [ 90%]
+tests/test_llm_rag_core.py::test_prompt_template_registry PASSED         [ 91%]
+tests/test_llm_rag_core.py::test_llm_service_model_switching PASSED      [ 92%]
+tests/test_llm_rag_core.py::test_vector_encoder PASSED                   [ 93%]
+tests/test_llm_rag_core.py::test_qdrant_vector_store PASSED              [ 95%]
+tests/test_llm_rag_core.py::test_rag_search_pipeline_and_reranker PASSED [ 96%]
+tests/test_llm_rag_core.py::test_context_builder_token_budgeting PASSED  [ 97%]
+tests/test_llm_rag_core.py::test_llm_api_endpoints PASSED                [ 98%]
+tests/test_llm_rag_core.py::test_retrieval_api_endpoints PASSED          [100%]
+
+================================== FAILURES ===================================
+__________________ test_real_ollama_generation_if_installed ___________________
+
+adapter = <services.llm.app.adapters.ollama_adapter.OllamaAdapter object at 0x000001F777F03740>
+llm_service = <services.llm.app.services.llm_service.LLMService object at 0x000001F777F018B0>
+
+    @pytest.mark.asyncio
+    async def test_real_ollama_generation_if_installed(adapter: OllamaAdapter, llm_service: LLMService):
+        """If a Qwen model is installed on Ollama, execute real generation and streaming test."""
+        models_data = await adapter.list_models()
+        installed_names = [m.get("name", "") for m in models_data]
+    
+        if not installed_names:
+            pytest.skip("No models installed in Ollama yet; skipping real generation test until model download completes")
+    
+        test_model = installed_names[0]
+        llm_service.select_model(test_model)
+    
+        # Test Real Generation
+>       gen_resp = await llm_service.generate(
+            prompt="Write a Python function named add_numbers(a, b) that returns their sum.",
+            mode="CODE",
+        )
+
+E:\ForgeAI\tests\test_ollama_real.py:115: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+services\llm\app\services\llm_service.py:238: in generate
+    response = await self.adapter.generate(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <services.llm.app.adapters.ollama_adapter.OllamaAdapter object at 0x000001F777F03740>
+model = 'qwen2.5-coder:7b-instruct-q4_0'
+prompt = 'System: You are ForgeAI, an expert AI software engineering agent.\nFollow clean architecture, SOLID design principles...ided above.\nDo not invent repository structure.\nDo not return markdown fences or commentary outside the JSON object.'
+system_prompt = 'You are ForgeAI, an expert AI software engineering agent.\nFollow clean architecture, SOLID design principles, and pr...ema.\nDo not return markdown fences, commentary, explanations outside the JSON object, or invented repository context.'
+options = {'temperature': 0.2}, structured_schema = None
+
+    async def generate(
+        self,
+        model: str,
+        prompt: str,
+        system_prompt: str | None = None,
+        options: dict[str, Any] | None = None,
+        structured_schema: dict[str, Any] | None = None,
+    ) -> dict[str, Any]:
+        """
+        Execute real LLM text completion via Ollama.
+    
+        When structured_output is enabled, Ollama is explicitly
+        instructed to return a JSON object.
+        """
+        payload: dict[str, Any] = {
+            "model": model,
+            "prompt": prompt,
+            "stream": False,
+            "options": options or {
+                "temperature": 0.2,
+                "top_p": 0.9,
+            },
+        }
+    
+        if system_prompt:
+            payload["system"] = system_prompt
+    
+        if structured_schema is not None:
+            payload["format"] = structured_schema
+    
+        try:
+            async with httpx.AsyncClient(
+                timeout=self.timeout
+            ) as client:
+                resp = await client.post(
+                    f"{self.ollama_url}/api/generate",
+                    json=payload,
+                )
+    
+                if resp.status_code == 200:
+                    return resp.json()
+    
+                error_msg = (
+                    f"Ollama generation failed with status "
+                    f"{resp.status_code}"
+                )
+    
+                logger.error(
+                    f"{error_msg}: {resp.text}"
+                )
+    
+>               raise ServiceUnavailableException(
+                    message=error_msg,
+                    details={
+                        "status_code": resp.status_code,
+                        "body": resp.text,
+                    },
+                )
+E               shared.exceptions.handlers.ServiceUnavailableException: Ollama generation failed with status 500
+
+services\llm\app\adapters\ollama_adapter.py:150: ServiceUnavailableException
+---------------------------- Captured stdout call -----------------------------
+[32m2026-08-17 02:12:45.371[0m | [1mINFO    [0m | [36mforge-ai[0m | [35mreq_id=- trace_id=- span_id=-[0m | [36mservices.llm.app.services.llm_service[0m:[36mselect_model[0m:[36m47[0m - [1mActive LLM model switched to 'qwen2.5-coder:7b-instruct-q4_0'[0m
+[32m2026-08-17 02:12:45.372[0m | [1mINFO    [0m | [36mforge-ai[0m | [35mreq_id=- trace_id=- span_id=-[0m | [36mservices.llm.app.services.llm_service[0m:[36mgenerate[0m:[36m198[0m - [1mLLM Generation dispatch: requested_override='None', active_model='qwen2.5-coder:7b-instruct-q4_0', target_model='qwen2.5-coder:7b-instruct-q4_0', mode='CODE'[0m
+[32m2026-08-17 02:12:58.288[0m | [31m[1mERROR   [0m | [36mforge-ai[0m | [35mreq_id=- trace_id=- span_id=-[0m | [36mservices.llm.app.adapters.ollama_adapter[0m:[36mgenerate[0m:[36m146[0m - [31m[1mOllama generation failed with status 500: {"error":"llama-server reported out-of-memory during startup: cudaMalloc failed: out of memory\nalloc_tensor_range: failed to allocate CUDA0 buffer of size 218103808\nllama_init_from_model: failed to initialize the context: failed to allocate buffer for kv cache"}[0m
+============================== warnings summary ===============================
+C:\Users\LENOVO\AppData\Roaming\Python\Python312\site-packages\fastapi\testclient.py:1
+  C:\Users\LENOVO\AppData\Roaming\Python\Python312\site-packages\fastapi\testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+tests/test_ollama_real.py::test_model_switching
+  e:\ForgeAII\services\llm\app\services\llm_service.py:43: StarletteDeprecationWarning: 'HTTP_422_UNPROCESSABLE_ENTITY' is deprecated. Use 'HTTP_422_UNPROCESSABLE_CONTENT' instead.
+    raise ValidationException(message="Model ID cannot be empty")
+
+tests/test_qdrant_real.py::test_qdrant_unreachable_error_handling
+  e:\ForgeAII\services\retrieval\app\qdrant\qdrant_client.py:68: UserWarning: Failed to obtain server version. Unable to check client-server compatibility. Set check_version=False to skip version check.
+    self._client = QdrantClient(host=self.qdrant_host, port=self.qdrant_port)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+FAILED tests/test_ollama_real.py::test_real_ollama_generation_if_installed - ...
+============ 1 failed, 80 passed, 3 warnings in 141.72s (0:02:21) =============
+
+
+STDERR:

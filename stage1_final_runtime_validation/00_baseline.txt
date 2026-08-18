@@ -1,0 +1,75 @@
+============================================================
+FORGEAI STAGE 1 BASELINE INFRASTRUCTURE HEALTH VERIFICATION
+============================================================
+
+--- DOCKER COMPOSE PS ---
+NAME               IMAGE                  COMMAND                  SERVICE      CREATED             STATUS                       PORTS
+forge_agent        forgeaii-agent         "python -m uvicorn sâ€¦"   agent        About an hour ago   Up About an hour (healthy)   0.0.0.0:8001->8001/tcp, [::]:8001->8001/tcp
+forge_evaluation   forgeaii-evaluation    "python -m uvicorn sâ€¦"   evaluation   About an hour ago   Up About an hour (healthy)   0.0.0.0:8007->8007/tcp, [::]:8007->8007/tcp
+forge_gateway      forgeaii-gateway       "python -m uvicorn sâ€¦"   gateway      About an hour ago   Up About an hour (healthy)   0.0.0.0:8000->8000/tcp, [::]:8000->8000/tcp
+forge_git          forgeaii-git           "python -m uvicorn sâ€¦"   git          About an hour ago   Up About an hour (healthy)   0.0.0.0:8006->8006/tcp, [::]:8006->8006/tcp
+forge_llm          forgeaii-llm           "python -m uvicorn sâ€¦"   llm          About an hour ago   Up About an hour (healthy)   0.0.0.0:8002->8002/tcp, [::]:8002->8002/tcp
+forge_mongodb      mongo:7.0              "docker-entrypoint.sâ€¦"   mongodb      About an hour ago   Up About an hour (healthy)   0.0.0.0:27017->27017/tcp, [::]:27017->27017/tcp
+forge_qdrant       qdrant/qdrant:v1.9.0   "./entrypoint.sh"        qdrant       About an hour ago   Up About an hour (healthy)   0.0.0.0:6333->6333/tcp, [::]:6333->6333/tcp
+forge_repository   forgeaii-repository    "python -m uvicorn sâ€¦"   repository   About an hour ago   Up 28 minutes (healthy)      0.0.0.0:8003->8003/tcp, [::]:8003->8003/tcp
+forge_retrieval    forgeaii-retrieval     "python -m uvicorn sâ€¦"   retrieval    About an hour ago   Up 55 minutes (healthy)      0.0.0.0:8004->8004/tcp, [::]:8004->8004/tcp
+forge_tools        forgeaii-tools         "python -m uvicorn sâ€¦"   tools        58 minutes ago      Up 58 minutes (healthy)      0.0.0.0:8005->8005/tcp, [::]:8005->8005/tcp
+
+--- DOCKER COMPOSE CONFIG VALIDATION ---
+Exit Code: 0 (0 = Valid)
+Config syntax is clean and valid.
+
+--- MICROSERVICES HEALTH ENDPOINTS ---
+[Gateway (8000)] HTTP 200: {"service":"api-gateway","status":"healthy","version":"0.1.0","timestamp":"2026-08-16T12:56:53.880527+00:00","details":{"status":"degraded","timestamp":"2026-08-16T12:56:53.880484+00:00","services":{"gateway":{"service_name":"gateway","status":"offline","version":null,"url":"http://localhost:8000","latency_ms":3044.25,"error":""},"agent":{"service_name":"agent","status":"healthy","version":"0.1.0","url":"http://agent:8001","latency_ms":44.22,"error":null},"llm":{"service_name":"llm","status":"healthy","version":"0.1.0","url":"http://llm:8002","latency_ms":39.99,"error":null},"repository":{"service_name":"repository","status":"healthy","version":"0.1.0","url":"http://repository:8003","latency_ms":35.81,"error":null},"retrieval":{"service_name":"retrieval","status":"healthy","version":"0.1.0","url":"http://retrieval:8004","latency_ms":27.59,"error":null},"tools":{"service_name":"tools","status":"healthy","version":"0.1.0","url":"http://tools:8005","latency_ms":19.9,"error":null},"git":{"service_name":"git","status":"healthy","version":"0.1.0","url":"http://git:8006","latency_ms":16.01,"error":null},"evaluation":{"service_name":"evaluation","status":"healthy","version":"0.1.0","url":"http://evaluation:8007","latency_ms":12.3,"error":null}}}}
+[Agent (8001)] HTTP 200: {"service":"agent-service","status":"healthy","version":"0.1.0","timestamp":"2026-08-16T12:56:53.891020+00:00","details":{"mongodb":{"status":"healthy","mongodb_connected":true,"database_name":"forge_ai_db"}}}
+[LLM (8002)] HTTP 200: {"service":"llm-service","status":"healthy","version":"0.1.0","timestamp":"2026-08-16T12:56:53.896647+00:00","details":{"ollama":{"url":"http://host.docker.internal:11434"}}}
+[Repository (8003)] HTTP 200: {"service":"repository-service","status":"healthy","version":"0.1.0","timestamp":"2026-08-16T12:56:53.918244+00:00","details":{"mongodb":{"status":"healthy","mongodb_connected":true,"database_name":"forge_ai_db"}}}
+[Retrieval (8004)] HTTP 200: {"service":"retrieval-service","status":"healthy","version":"0.1.0","timestamp":"2026-08-16T12:56:53.932698+00:00","details":{"qdrant":{"status":"healthy","qdrant_connected":true,"collection_name":"forge_ai_code","collection_exists":true},"embedding_model":{"status":"healthy","model_name":"BAAI/bge-small-en-v1.5","dimension":384,"provider":"FastEmbed (ONNX Local)"}}}
+[Tools (8005)] HTTP 200: {"service":"tool-service","status":"healthy","version":"0.1.0","timestamp":"2026-08-16T12:56:53.948227+00:00","details":null}
+[Git (8006)] HTTP 200: {"service":"git-service","status":"healthy","version":"0.1.0","timestamp":"2026-08-16T12:56:53.964080+00:00","details":null}
+[Evaluation (8007)] HTTP 200: {"service":"evaluation-service","status":"healthy","version":"0.1.0","timestamp":"2026-08-16T12:56:53.969723+00:00","details":{"mongodb":{"status":"healthy","mongodb_connected":true,"database_name":"forge_ai_db"}}}
+[Qdrant (6333)] HTTP 200: healthz check passed
+[Ollama (11434)] HTTP 200: {"models":[{"name":"qwen2.5-coder:7b-instruct-q4_0","model":"qwen2.5-coder:7b-instruct-q4_0","modified_at":"2026-08-11T03:12:34.3669336+05:30","size":4431404743,"digest":"8d7f257337d32a58f4a65c08e15446c2eb51c64b3d45ecf87f30df1ac3c151fc","details":{"parent_model":"","format":"gguf","family":"qwen2","families":["qwen2"],"parameter_size":"7.6B","quantization_level":"Q4_0","context_length":32768,"embedding_length":3584},"capabilities":["completion","tools","insert"]},{"name":"qwen2.5-coder:3b-instruct-q4_0","model":"qwen2.5-coder:3b-instruct-q4_0","modified_at":"2026-08-08T19:47:44.3205995+05:30","size":1822859568,"digest":"6a55fb15068d38eaea3fdbfb3f92bb11d4d06378581d08235edd432395233b47","details":{"parent_model":"","format":"gguf","family":"qwen2","families":["qwen2"],"parameter_size":"3.1B","quantization_level":"Q4_0","context_length":32768,"embedding_length":2048},"capabilities":["completion","tools","insert"]}]}
+
+--- RECENT CONTAINER LOGS SUMMARY ---
+Container forge_gateway last 5 lines:
+INFO:     172.18.0.1:60374 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57260 - "GET /health HTTP/1.1" 200 OK
+[32m2026-08-16 12:56:53.880[0m | [1mINFO    [0m | [36mforge-ai[0m | [35mreq_id=- trace_id=- span_id=-[0m | [36mshared.middleware.logging[0m:[36mdispatch[0m:[36m28[0m - [1m<-- GET /health Status: 200 Duration: 3045.12ms[0m
+[32m2026-08-16 12:56:53.881[0m | [1mINFO    [0m | [36mforge-ai[0m | [35mreq_id=- trace_id=- span_id=-[0m | [36mshared.middleware.logging[0m:[36mdispatch[0m:[36m28[0m - [1m<-- GET /health Status: 200 Duration: 3000.97ms[0m
+[32m2026-08-16 12:56:53.881[0m | [1mINFO    [0m | [36mforge-ai[0m | [35mreq_id=- trace_id=- span_id=-[0m | [36mshared.middleware.logging[0m:[36mdispatch[0m:[36m28[0m - [1m<-- GET /health Status: 200 Duration: 1321.47ms[0m
+
+Container forge_agent last 5 lines:
+INFO:     172.18.0.1:34994 - "GET /health HTTP/1.1" 200 OK
+[32m2026-08-16 12:56:53.891[0m | [1mINFO    [0m | [36mforge-ai[0m | [35mreq_id=- trace_id=- span_id=-[0m | [36mshared.middleware.logging[0m:[36mdispatch[0m:[36m28[0m - [1m<-- GET /health Status: 200 Duration: 1.87ms[0m
+[32m2026-08-16 12:56:55.617[0m | [1mINFO    [0m | [36mforge-ai[0m | [35mreq_id=- trace_id=- span_id=-[0m | [36mshared.middleware.logging[0m:[36mdispatch[0m:[36m21[0m - [1m--> GET /health (Client: 127.0.0.1)[0m
+INFO:     127.0.0.1:49910 - "GET /health HTTP/1.1" 200 OK
+[32m2026-08-16 12:56:55.618[0m | [1mINFO    [0m | [36mforge-ai[0m | [35mreq_id=- trace_id=- span_id=-[0m | [36mshared.middleware.logging[0m:[36mdispatch[0m:[36m28[0m - [1m<-- GET /health Status: 200 Duration: 1.69ms[0m
+
+Container forge_repository last 5 lines:
+INFO:     172.18.0.11:55394 - "GET /health HTTP/1.1" 200 OK
+[32m2026-08-16 12:56:50.882[0m | [1mINFO    [0m | [36mforge-ai[0m | [35mreq_id=- trace_id=- span_id=-[0m | [36mshared.middleware.logging[0m:[36mdispatch[0m:[36m28[0m - [1m<-- GET /health Status: 200 Duration: 2.30ms[0m
+[32m2026-08-16 12:56:53.916[0m | [1mINFO    [0m | [36mforge-ai[0m | [35mreq_id=- trace_id=- span_id=-[0m | [36mshared.middleware.logging[0m:[36mdispatch[0m:[36m21[0m - [1m--> GET /health (Client: 172.18.0.1)[0m
+INFO:     172.18.0.1:36014 - "GET /health HTTP/1.1" 200 OK
+[32m2026-08-16 12:56:53.918[0m | [1mINFO    [0m | [36mforge-ai[0m | [35mreq_id=- trace_id=- span_id=-[0m | [36mshared.middleware.logging[0m:[36mdispatch[0m:[36m28[0m - [1m<-- GET /health Status: 200 Duration: 1.51ms[0m
+
+Container forge_retrieval last 5 lines:
+[32m2026-08-16 12:56:53.932[0m | [1mINFO    [0m | [36mforge-ai[0m | [35mreq_id=- trace_id=- span_id=-[0m | [36mshared.middleware.logging[0m:[36mdispatch[0m:[36m21[0m - [1m--> GET /health (Client: 172.18.0.1)[0m
+[32m2026-08-16 12:56:53.932[0m | [1mINFO    [0m | [36mforge-ai[0m | [35mreq_id=- trace_id=- span_id=-[0m | [36mshared.middleware.logging[0m:[36mdispatch[0m:[36m28[0m - [1m<-- GET /health Status: 200 Duration: 0.80ms[0m
+INFO:     127.0.0.1:35208 - "GET /health HTTP/1.1" 200 OK
+[32m2026-08-16 12:56:56.263[0m | [1mINFO    [0m | [36mforge-ai[0m | [35mreq_id=- trace_id=- span_id=-[0m | [36mshared.middleware.logging[0m:[36mdispatch[0m:[36m21[0m - [1m--> GET /health (Client: 127.0.0.1)[0m
+[32m2026-08-16 12:56:56.264[0m | [1mINFO    [0m | [36mforge-ai[0m | [35mreq_id=- trace_id=- span_id=-[0m | [36mshared.middleware.logging[0m:[36mdispatch[0m:[36m28[0m - [1m<-- GET /health Status: 200 Duration: 1.31ms[0m
+
+Container forge_llm last 5 lines:
+INFO:     172.18.0.11:49102 - "GET /health HTTP/1.1" 200 OK
+[32m2026-08-16 12:56:50.881[0m | [1mINFO    [0m | [36mforge-ai[0m | [35mreq_id=- trace_id=- span_id=-[0m | [36mshared.middleware.logging[0m:[36mdispatch[0m:[36m28[0m - [1m<-- GET /health Status: 200 Duration: 2.33ms[0m
+INFO:     172.18.0.1:54226 - "GET /health HTTP/1.1" 200 OK
+[32m2026-08-16 12:56:53.896[0m | [1mINFO    [0m | [36mforge-ai[0m | [35mreq_id=- trace_id=- span_id=-[0m | [36mshared.middleware.logging[0m:[36mdispatch[0m:[36m21[0m - [1m--> GET /health (Client: 172.18.0.1)[0m
+[32m2026-08-16 12:56:53.896[0m | [1mINFO    [0m | [36mforge-ai[0m | [35mreq_id=- trace_id=- span_id=-[0m | [36mshared.middleware.logging[0m:[36mdispatch[0m:[36m28[0m - [1m<-- GET /health Status: 200 Duration: 0.73ms[0m
+
+Container forge_tools last 5 lines:
+[32m2026-08-16 12:56:52.760[0m | [1mINFO    [0m | [36mforge-ai[0m | [35mreq_id=- trace_id=- span_id=-[0m | [36mshared.middleware.logging[0m:[36mdispatch[0m:[36m21[0m - [1m--> GET /health (Client: 127.0.0.1)[0m
+[32m2026-08-16 12:56:52.761[0m | [1mINFO    [0m | [36mforge-ai[0m | [35mreq_id=- trace_id=- span_id=-[0m | [36mshared.middleware.logging[0m:[36mdispatch[0m:[36m28[0m - [1m<-- GET /health Status: 200 Duration: 0.70ms[0m
+INFO:     172.18.0.1:42482 - "GET /health HTTP/1.1" 200 OK
+[32m2026-08-16 12:56:53.947[0m | [1mINFO    [0m | [36mforge-ai[0m | [35mreq_id=- trace_id=- span_id=-[0m | [36mshared.middleware.logging[0m:[36mdispatch[0m:[36m21[0m - [1m--> GET /health (Client: 172.18.0.1)[0m
+[32m2026-08-16 12:56:53.948[0m | [1mINFO    [0m | [36mforge-ai[0m | [35mreq_id=- trace_id=- span_id=-[0m | [36mshared.middleware.logging[0m:[36mdispatch[0m:[36m28[0m - [1m<-- GET /health Status: 200 Duration: 0.70ms[0m

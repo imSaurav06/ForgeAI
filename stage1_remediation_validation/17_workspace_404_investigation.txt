@@ -1,0 +1,23 @@
+FORGEAI STAGE 1 REMEDIATION — EVIDENCE 17: WORKSPACE FOLDER 404 INVESTIGATION
+Timestamp: 2026-08-16T12:30:00.000000+00:00
+Status: ROOT CAUSE IDENTIFIED & RESOLVED
+======================================================================
+
+1. FORENSIC ROOT CAUSE ANALYSIS:
+- Issue: In the frontend Open Workspace modal, browsing directories returned 404 or empty fallback folders (`/root`).
+- Findings:
+  1. Frontend Client (`frontend/src/lib/api/gateway.ts`): calls `/filesystem/browse?path=...`.
+  2. API Gateway (`services/gateway/app/api/routers/filesystem.py`): correctly routes to `GET http://repository:8003/v1/repositories/browse`.
+  3. Repository Service (`services/repository/app/services/repository_service.py`):
+     * Inside Docker Linux container (`os.name == 'posix'`), `browse_filesystem` fell back to `drives = [DriveItem(name="/", path="/")]`.
+     * Windows drive letters (`C:/`, `E:/`, `F:/`) passed from the frontend host were resolved as non-existent relative Linux paths under `/root`.
+     * `target_path.is_dir()` failed on `F:/3_Netflix_Clone`, collapsing to `/root` with zero visible subdirectories or 404.
+
+2. REMEDIATION APPLIED:
+- In `services/repository/app/services/repository_service.py`:
+  * Added detection for container host mounts (`/host_c`, `/host_e`, `/host_f`, `/app/workspace`).
+  * Implemented bidirectional Windows-to-Container and Container-to-Windows path normalization.
+  * Added drive letter translation so selecting `F:/` browses `/host_f/` while presenting canonical `F:/` paths to the frontend.
+  * Filtered out noisy system and build directories (`$recycle.bin`, `node_modules`, `.git`, `__pycache__`).
+
+VERDICT: Root Cause Discovered & Fully Documented

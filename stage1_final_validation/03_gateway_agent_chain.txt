@@ -1,0 +1,14 @@
+============================================================
+FORGEAI STAGE 1 — GATEWAY -> AGENT CHAIN EVIDENCE
+Timestamp: 2026-08-15T22:57:12.477543+00:00
+Target: http://localhost:8000/api/v1/agent/runs -> http://agent:8001/v1/agent/runs
+============================================================
+
+1. GATEWAY PROXY DISPATCH:
+- Client Method: POST /api/v1/agent/runs
+- Auth: JWT Bearer Token (Verified)
+- Gateway Internal Token: Injected HMAC SHA-256 header (X-Internal-Service-Token)
+- Target Downstream: http://agent:8001/v1/agent/runs
+- HTTP Response Code: 201 (201 Created)
+- Run ID Returned: run_aa61e71950
+- Verification: PASS

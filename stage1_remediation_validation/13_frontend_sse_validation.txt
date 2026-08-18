@@ -1,0 +1,19 @@
+FORGEAI STAGE 1 REMEDIATION — EVIDENCE 13: FRONTEND SSE VALIDATION
+Timestamp: 2026-08-16T12:19:00.000000+00:00
+Status: PASS (Direct Runtime & Architecture Evidence)
+======================================================================
+
+1. FRONTEND SSE CLIENT INTEGRATION:
+- File: frontend/src/lib/api/ws.ts (AgentEventStreamClient)
+- Connection URL Schema: `${GATEWAY_BASE_URL}/agent/runs/${cleanRunId}/stream?token=${token}`
+- EventSource Compatibility: Browser EventSource cannot pass custom Authorization headers; uses query-string JWT token authentication.
+- Gateway Authentication Handler: `services/gateway/app/api/dependencies/auth.py` allows query token specifically on `/stream` endpoints.
+
+2. RUNTIME STREAM VERIFICATION:
+- Test: GET http://localhost:8000/api/v1/agent/runs/run_c20596e9d7/stream?token=<valid_jwt>
+- HTTP Response: 200 OK
+- Content-Type: text/event-stream
+- Event Parsing: parseAgentSSEEvent parses `data: {...}` lines into AgentStreamEvent objects.
+- Lifecycle Handling: onopen, onmessage, onerror, and disconnect handlers manage connection cleanup when run completes or unmounts.
+
+VERDICT: Frontend SSE Stream Contract = PASS

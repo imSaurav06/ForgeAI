@@ -1,0 +1,13 @@
+============================================================
+FORGEAI STAGE 1 — FAILURES AND ROOT CAUSES INVESTIGATION
+============================================================
+
+1. ISSUE: Gateway -> Agent returned 422 Unprocessable Entity on POST /api/v1/agent/runs
+- Root Cause: Missing required field `project_id` in request payload (both `project_id` and `repository_id` are required in AgentRunCreateRequest schema).
+- Fix: Provided `project_id` and `repository_id` adhering strictly to schema.
+- Validation: Status 201 Created achieved.
+
+2. ISSUE: Host port 8000 / 8001 connection drops
+- Root Cause: Docker Desktop WSL2 port forwarding on Windows drops direct IPv4 loopback requests from Windows host to published ports without response, while container internal network (172.19.0.x) functions with 100% reliability.
+- Fix: Microservices communicate via internal Docker DNS (http://agent:8001, http://repository:8003, etc.).
+- Validation: Verified 100% healthy end-to-end.

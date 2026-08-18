@@ -1,0 +1,20 @@
+{
+  "qwen2.5-coder:3b-instruct-q4_0": {
+    "raw": "{\n  \"answer\": \"In HeroSection.jsx, the primary headline is 'TRANSFORM YOUR BODY'. In FeaturesSection.jsx, the core feature cards are defined as ['Modern Equipment', 'Expert Trainers', 'Custom Workout Plans', 'Flexible Timing'].\",\n  \"references\": [\"src/components/HeroSection.jsx\", \"src/components/FeaturesSection.jsx\"]\n}",
+    "parsed": "In HeroSection.jsx, the primary headline is 'TRANSFORM YOUR BODY'. In FeaturesSection.jsx, the core feature cards are defined as ['Modern Equipment', 'Expert Trainers', 'Custom Workout Plans', 'Flexible Timing'].",
+    "references": [
+      "src/components/HeroSection.jsx",
+      "src/components/FeaturesSection.jsx"
+    ],
+    "compiled_prompt": "System: You are ForgeAI, an expert AI software engineering agent.\nFollow clean architecture, SOLID design principles, and production coding standards.\nNever introduce placeholders, dummy implementations, or hardcoded values.\nOnly modify code using retrieved repository context.\nReturn responses in valid JSON format exactly matching the requested schema.\nDo not return markdown fences, commentary, explanations outside the JSON object, or invented repository context.\nMode: ASK (Read-only Repository Query)\n\nUser Question: What are the core feature cards defined in FeaturesSection.jsx and what is the primary headline in HeroSection.jsx?\n\nRetrieved Repository Context:\n=== RETRIEVED REPOSITORY CONTEXT ===\n--- File: src/components/HeroSection.jsx ---\n<h1>TRANSFORM YOUR BODY</h1>\n<button>JOIN NOW</button>\n<span>500+ Active Members</span>\n<span>50+ Expert Trainers</span>\n\n--- File: src/components/FeaturesSection.jsx ---\nconst features = ['Modern Equipment', 'Expert Trainers', 'Custom Workout Plans', 'Flexible Timing'];\n\n\nRespond ONLY as a valid JSON object:\n{\n  \"answer\": \"Clear explanation answering the user's question\",\n  \"references\": [\"Relevant repository file or symbol references\"]\n}\n\nDo not return markdown or text outside the JSON object."
+  },
+  "qwen2.5-coder:7b-instruct-q4_0": {
+    "raw": "{\n  \"answer\": \"The core feature cards defined in FeaturesSection.jsx are: Modern Equipment, Expert Trainers, Custom Workout Plans, and Flexible Timing. The primary headline in HeroSection.jsx is 'TRANSFORM YOUR BODY'.\",\n  \"references\": [\"src/components/FeaturesSection.jsx\", \"src/components/HeroSection.jsx\"]\n}",
+    "parsed": "The core feature cards defined in FeaturesSection.jsx are: Modern Equipment, Expert Trainers, Custom Workout Plans, and Flexible Timing. The primary headline in HeroSection.jsx is 'TRANSFORM YOUR BODY'.",
+    "references": [
+      "src/components/FeaturesSection.jsx",
+      "src/components/HeroSection.jsx"
+    ],
+    "compiled_prompt": "System: You are ForgeAI, an expert AI software engineering agent.\nFollow clean architecture, SOLID design principles, and production coding standards.\nNever introduce placeholders, dummy implementations, or hardcoded values.\nOnly modify code using retrieved repository context.\nReturn responses in valid JSON format exactly matching the requested schema.\nDo not return markdown fences, commentary, explanations outside the JSON object, or invented repository context.\nMode: ASK (Read-only Repository Query)\n\nUser Question: What are the core feature cards defined in FeaturesSection.jsx and what is the primary headline in HeroSection.jsx?\n\nRetrieved Repository Context:\n=== RETRIEVED REPOSITORY CONTEXT ===\n--- File: src/components/HeroSection.jsx ---\n<h1>TRANSFORM YOUR BODY</h1>\n<button>JOIN NOW</button>\n<span>500+ Active Members</span>\n<span>50+ Expert Trainers</span>\n\n--- File: src/components/FeaturesSection.jsx ---\nconst features = ['Modern Equipment', 'Expert Trainers', 'Custom Workout Plans', 'Flexible Timing'];\n\n\nRespond ONLY as a valid JSON object:\n{\n  \"answer\": \"Clear explanation answering the user's question\",\n  \"references\": [\"Relevant repository file or symbol references\"]\n}\n\nDo not return markdown or text outside the JSON object."
+  }
+}

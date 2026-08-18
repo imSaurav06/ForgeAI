@@ -1,0 +1,39 @@
+FORGEAI STAGE 1 REMEDIATION — EVIDENCE 18: WORKSPACE FOLDER FIX VALIDATION
+Timestamp: 2026-08-16T12:30:00.000000+00:00
+Status: PASS (Direct Runtime Verification)
+======================================================================
+
+1. RUNTIME DRIVE ENUMERATION TEST:
+Request: GET http://localhost:8000/api/v1/filesystem/browse
+HTTP Status: 200 OK
+Drives Discovered:
+- C: -> C:/
+- E: -> E:/
+- F: -> F:/
+- Workspace -> /app/workspace
+
+2. DIRECTORY NAVIGATION TEST (F:/):
+Request: GET http://localhost:8000/api/v1/filesystem/browse?path=F:/
+HTTP Status: 200 OK
+Directories Listed:
+- 3_Netflix_Clone
+- Docker
+- ForgeAI
+- gymlanding
+- reactcalculator
+- software-engineer-portfolio
+
+3. NESTED FOLDER NAVIGATION TEST (F:/3_Netflix_Clone):
+Request: GET http://localhost:8000/api/v1/filesystem/browse?path=F:/3_Netflix_Clone
+HTTP Status: 200 OK
+Parent: F:/
+Subdirectories:
+- src
+
+4. REPOSITORY OPEN TEST:
+Request: POST http://localhost:8000/api/v1/repositories/open
+Payload: {"path": "F:/3_Netflix_Clone"}
+HTTP Status: 200 OK
+Response: {"id": "repo_83917e04", "name": "3_Netflix_Clone", "path": "/host_f/3_Netflix_Clone"}
+
+VERDICT: Workspace Browsing & Opening = 100% PASS

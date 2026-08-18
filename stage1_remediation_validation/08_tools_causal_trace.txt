@@ -1,0 +1,23 @@
+FORGEAI STAGE 1 REMEDIATION — EVIDENCE 08: TOOLS CAUSAL TRACE
+Timestamp: 2026-08-16T12:18:45.455149+00:00
+Status: PASS (Direct Runtime Lifecycle Evidence)
+======================================================================
+Repository: repo_83917e04 (/host_f/3_Netflix_Clone)
+Probe File: stage1_remediation_probe_46b160f2.txt
+
+1. CREATE PROBE FILE via apply-patch:
+   HTTP 200 | Data: {'success': True, 'created_count': 1, 'modified_count': 0, 'deleted_count': 0}
+2. READ & VERIFY INITIAL CONTENT:
+   HTTP 200 | Content Verified: True
+   Verbatim Content: 'Initial Probe Content - ID: 46b160f2\nCreated by Stage 1 Remediation Tool Probe.\n'
+3. MODIFY PROBE FILE via apply-patch:
+   HTTP 200 | Data: {'success': True, 'created_count': 0, 'modified_count': 1, 'deleted_count': 0}
+4. READ & VERIFY MODIFIED CONTENT:
+   HTTP 200 | Content Verified: True
+   Verbatim Content: 'Modified Probe Content - ID: 46b160f2\nUpdated by Stage 1 Remediation Tool Probe.\nSecond line.\n'
+5. DELETE PROBE FILE via delete-file:
+   HTTP 200 | Data: {'path': 'stage1_remediation_probe_46b160f2.txt', 'status': 'deleted'}
+6. VERIFY PROBE ABSENT (FAIL-CLOSED):
+   HTTP 404 (Expected 404 Not Found)
+
+VERDICT: P1-4 = PASS

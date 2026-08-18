@@ -1,0 +1,134 @@
+
+--- A. REPOSITORY REGISTRATION ---
+Repository ID: repo_6893ab63
+Returned Path: F:\3_Netflix_Clone
+Repository Name: 3_Netflix_Clone
+User ID: stage2b_rag_tester
+Created At: 2026-08-16T16:42:38.892006+00:00
+Path Resolves to Exact Target: True (F:\3_Netflix_Clone == F:\3_Netflix_Clone)
+
+--- B. REPOSITORY METADATA QUERY ---
+Queried Meta ID: repo_6893ab63
+Queried Meta Path: F:\3_Netflix_Clone
+Queried Meta Branch: main
+
+--- C. FILESYSTEM IDENTITY VERIFICATION ---
+Target Directory Exists on Disk: True
+Known File 'src/App.jsx': exists=True, size=3070 bytes
+Known File 'src/main.jsx': exists=True, size=234 bytes
+Known File 'package.json': exists=True, size=618 bytes
+Known File 'vite.config.js': exists=True, size=132 bytes
+
+--- D. REPOSITORY SCAN ---
+Total Scanned Files: 10
+Languages Breakdown: {
+  "html": {
+    "file_count": 1,
+    "total_bytes": 327,
+    "percentage": 0.29
+  },
+  "json": {
+    "file_count": 2,
+    "total_bytes": 103867,
+    "percentage": 92.86
+  },
+  "javascript": {
+    "file_count": 3,
+    "total_bytes": 392,
+    "percentage": 0.35
+  },
+  "markdown": {
+    "file_count": 1,
+    "total_bytes": 2950,
+    "percentage": 2.64
+  },
+  "jsx": {
+    "file_count": 2,
+    "total_bytes": 3304,
+    "percentage": 2.95
+  },
+  "css": {
+    "file_count": 1,
+    "total_bytes": 1015,
+    "percentage": 0.91
+  }
+}
+Exclusions Check: node_modules in scan = False (must be False)
+Exclusions Check: .git in scan = False (must be False)
+Scanned Files List:
+ - index.html (html, 327B, sha256=66e51f9e0add...)
+ - package-lock.json (json, 103249B, sha256=25cc545f9e15...)
+ - package.json (json, 618B, sha256=ef484fc15029...)
+ - postcss.config.js (javascript, 79B, sha256=010e8774c769...)
+ - README.md (markdown, 2950B, sha256=ad8e5d2cf294...)
+ - tailwind.config.js (javascript, 181B, sha256=3dd3712212ac...)
+ - vite.config.js (javascript, 132B, sha256=7679dd2d1d73...)
+ - src/App.jsx (jsx, 3070B, sha256=5bad76d179df...)
+ - src/index.css (css, 1015B, sha256=85d922b694b9...)
+ - src/main.jsx (jsx, 234B, sha256=dfe7f7d0a5d8...)
+
+--- E. SYMBOL / AST INDEX VERIFICATION ---
+Indexing Response: total_files=10, total_symbols=24
+Total Extracted Symbols Count: 24
+Symbols extracted from 'src/App.jsx' (15):
+ - Symbol: 'react' | Type: import | Lines 1-1 | Sig: import React, { useState, useEffect } from 'react';
+ - Symbol: 'react-router-dom' | Type: import | Lines 2-2 | Sig: import { BrowserRouter, Routes, Route } from 'react-router-dom';
+ - Symbol: 'axios' | Type: import | Lines 3-3 | Sig: import axios from 'axios';
+ - Symbol: './components/Navbar' | Type: import | Lines 4-4 | Sig: import Navbar from './components/Navbar';
+ - Symbol: './components/Hero' | Type: import | Lines 5-5 | Sig: import Hero from './components/Hero';
+ - Symbol: './components/MovieRow' | Type: import | Lines 6-6 | Sig: import MovieRow from './components/MovieRow';
+ - Symbol: './components/MovieModal' | Type: import | Lines 7-7 | Sig: import MovieModal from './components/MovieModal';
+ - Symbol: './components/SearchBar' | Type: import | Lines 8-8 | Sig: import SearchBar from './components/SearchBar';
+ - Symbol: './components/ProfileSwitcher' | Type: import | Lines 9-9 | Sig: import ProfileSwitcher from './components/ProfileSwitcher';
+ - Symbol: './pages/Home' | Type: import | Lines 10-10 | Sig: import Home from './pages/Home';
+ - Symbol: './pages/SearchResults' | Type: import | Lines 11-11 | Sig: import SearchResults from './pages/SearchResults';
+ - Symbol: './pages/ProfileManagement' | Type: import | Lines 12-12 | Sig: import ProfileManagement from './pages/ProfileManagement';
+ - Symbol: 'lucide-react' | Type: import | Lines 15-15 | Sig: import { Search, User, Menu } from 'lucide-react';
+ - Symbol: 'App' | Type: function | Lines 17-107 | Sig: function App()
+ - Symbol: 'App' | Type: export | Lines 109-109 | Sig: export default App
+
+--- F. VECTOR INDEXING (QDRANT 'forge_ai_code') ---
+Qdrant Collection: forge_ai_code
+Points Indexed for repo 'repo_6893ab63': 34
+Verified Points Retrieved from Qdrant with repository_id='repo_6893ab63': count=5
+Sample Point Payload Evidence:
+ Point [1] ID: 02b5b9a0-95d0-5d56-91d5-857c29c6f28e
+   repo_id: repo_6893ab63
+   file_path: src/index.css
+   symbol: None
+   symbol_type: file
+   lines: 1-1
+   snippet: 'Language: css\nFile: src/index.css\nType: file'...
+ Point [2] ID: 0a5e4a22-357f-5750-82dc-f5eb73a6bd5d
+   repo_id: repo_6893ab63
+   file_path: package-lock.json
+   symbol: None
+   symbol_type: file
+   lines: 1-1
+   snippet: 'Language: json\nFile: package-lock.json\nType: file'...
+ Point [3] ID: 122066f2-c6ba-5ba3-8b57-39c5589220d6
+   repo_id: repo_6893ab63
+   file_path: vite.config.js
+   symbol: vite
+   symbol_type: import
+   lines: 1-1
+   snippet: 'Language: javascript\nFile: vite.config.js\nSymbol: vite\nType: import\nSignature: import { defineConfig'...
+
+--- G. REPOSITORY ISOLATION PROOF ---
+Query with Nonexistent repo_id='repo_fake_nonexistent_xyz999' -> Points returned: 0 (must be 0)
+Semantic search with fake repo_id -> Results returned: 0 (must be 0)
+
+--- H. RE-REGISTRATION BEHAVIOR ---
+Initial ID: repo_6893ab63
+Re-opened ID: repo_6893ab63
+Re-registration Behavior: REUSES EXISTING REPOSITORY IDENTITY
+Re-opened Path: F:\3_Netflix_Clone
+
+--- I. FILESYSTEM INTEGRITY CHECK ---
+Initial scanned file count: 10
+Post-probe scanned file count: 10
+Stray Probe Files in Workspace: 0 (must be 0)
+
+============================================================
+CHECKPOINT 2B-01-01 RESULT: PASS (100% VERIFIED)
+============================================================

@@ -1,0 +1,16 @@
+============================================================
+FORGEAI STAGE 1 — EXISTING EVIDENCE AUDIT SUMMARY
+============================================================
+
+Historical Stage 1 evidence analysis:
+1. stage1_agent_503_forensics.txt: Documented 503 error when Gateway could not route to agent.
+2. stage1_agent_capability_source.txt: Catalog of Agent orchestrator and tool schemas.
+3. stage1_agent_contract_source.txt: Exact API schemas for AgentRunCreateRequest.
+4. stage1_agent_internal_isolation.txt / v2: Proof that microservices enforce HMAC internal tokens.
+5. stage1_agent_port_mapping.txt: Docker port publishing forensics.
+6. stage1_auth_blocker_source.txt & stage1_auth_schema_forensics.txt: Auth schema requirements.
+7. stage1_exact_runtime_contracts.txt: OpenAPI contracts for Gateway, Projects, Repositories, Agent.
+
+Forensic Correlation:
+- All 9 Docker services are fully functional in the containerized Docker network.
+- The Agent microservice successfully executes runs, state transitions, RAG queries, LLM reasoning, and tool calls.

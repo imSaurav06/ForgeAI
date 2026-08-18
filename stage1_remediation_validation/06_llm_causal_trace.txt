@@ -1,0 +1,31 @@
+FORGEAI STAGE 1 REMEDIATION — EVIDENCE 06: LLM CAUSAL TRACE
+Timestamp: 2026-08-16T12:18:00.000000+00:00
+Status: PASS (Direct Runtime Evidence)
+======================================================================
+
+Target Run ID: run_c20596e9d7
+Service: LLM Service (http://llm:8002 / http://localhost:8002)
+Backend Engine: Ollama Local (http://host.docker.internal:11434)
+Active Model: qwen2.5-coder:3b-instruct-q4_0
+
+Request Dispatched:
+- Endpoint: POST /v1/generate
+- Prompt: "Analyze App.jsx and create an execution plan for performance optimization"
+- Mode: "PLAN"
+- Context Length: 783 characters of real semantic retrieval from src/App.jsx
+
+LLM Response Received:
+- Model: "qwen2.5-coder:3b-instruct-q4_0"
+- Structured Data:
+  * plan_id: "plan_app_optimization"
+  * summary: "Performance optimization for App.jsx"
+  * steps: 5 distinct dependency-ordered execution steps (step_1 through step_5)
+  * affected_files: ["src/App.jsx", "src/main.jsx"]
+  * test_plan: ["Run unit tests for App.jsx and main.jsx"]
+
+Downstream Impact:
+- Agent consumed structured LLM plan directly into AgentExecutionRun.execution_plan.
+- PlanValidator validated all steps and structure.
+- Event plan.created emitted with the exact LLM plan payload.
+
+VERDICT: P1-3 = PASS

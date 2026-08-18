@@ -1,0 +1,23 @@
+FORGEAI STAGE 1 REMEDIATION — EVIDENCE 12: RAW GATEWAY SSE FRAMES (PROXIED)
+Timestamp: 2026-08-16T12:18:00.000000+00:00
+Status: PASS (Direct Runtime Capture)
+======================================================================
+Endpoint: GET http://localhost:8000/api/v1/agent/runs/run_c20596e9d7/stream
+Headers: Authorization: Bearer <user_jwt_token>, Accept: text/event-stream
+
+RAW PROXIED SSE FRAMES:
+data: {"run_id": "run_c20596e9d7", "event_type": "agent.started", "payload": {"mode": "PLAN", "instruction": "Analyze App.jsx and create an execution plan for performance optimization"}, "timestamp": 1786882585.7478664}
+
+data: {"run_id": "run_c20596e9d7", "event_type": "repository.searching", "payload": {"repository_id": "repo_83917e04"}, "timestamp": 1786882585.7480416}
+
+data: {"run_id": "run_c20596e9d7", "event_type": "retrieval.completed", "payload": {"context_length": 783}, "timestamp": 1786882585.776257}
+
+data: {"run_id": "run_c20596e9d7", "event_type": "plan.created", "payload": {"plan": {"plan_id": "plan_app_optimization", "summary": "Performance optimization for App.jsx", "steps": [{"id": "step_1", "task": "Identify bottlenecks in App.jsx", "tool": "retrieval_search", "depends_on": [], "files": ["src/App.jsx"], "status": "pending", "metadata": {}}, {"id": "step_2", "task": "Analyze performance metrics", "tool": "llm_generate", "depends_on": ["step_1"], "files": [], "status": "pending", "metadata": {}}, {"id": "step_3", "task": "Optimize component imports", "tool": "file_writer", "depends_on": ["step_2"], "files": ["src/App.jsx"], "status": "pending", "metadata": {}}, {"id": "step_4", "task": "Refactor code for better performance", "tool": "llm_generate", "depends_on": ["step_3"], "files": ["src/App.jsx"], "status": "pending", "metadata": {}}, {"id": "step_5", "task": "Test optimized App.jsx", "tool": "test_runner", "depends_on": ["step_4"], "files": ["src/App.jsx", "src/main.jsx"], "status": "pending", "metadata": {}}], "affected_files": ["src/App.jsx", "src/main.jsx"], "test_plan": ["Run unit tests for App.jsx and main.jsx"], "metadata": {"source": "llm", "mode": "PLAN"}}, "model": "qwen2.5-coder:3b-instruct-q4_0", "source": "llm"}, "timestamp": 1786882591.186976}
+
+data: {"run_id": "run_c20596e9d7", "event_type": "coding.started", "payload": {"mode": "PLAN", "model": "qwen2.5-coder:3b-instruct-q4_0"}, "timestamp": 1786882591.1874008}
+
+data: {"run_id": "run_c20596e9d7", "event_type": "coding.completed", "payload": {"response_length": 803}, "timestamp": 1786882594.694072}
+
+data: {"run_id": "run_c20596e9d7", "event_type": "agent.completed", "payload": {"status": "completed"}, "timestamp": 1786882594.6945426}
+
+VERDICT: Gateway SSE Streaming Proxy = PASS

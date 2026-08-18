@@ -1,0 +1,24 @@
+============================================================
+FORGEAI STAGE 1 — 09 GATEWAY SSE PROXY RUNTIME EVIDENCE
+============================================================
+
+Gateway Endpoint: GET http://localhost:8000/api/v1/agent/runs/run_8fffc9c2b0/stream
+Authentication: Bearer JWT Token
+Run ID: run_8fffc9c2b0
+Total Captured Proxied Frames: 7
+
+--- RAW GATEWAY PROXIED SSE FRAMES ---
+data: {"run_id": "run_8fffc9c2b0", "event_type": "agent.started", "payload": {"mode": "EXPLAIN", "instruction": "Explain the routing structure in Netflix clone"}, "timestamp": 1786885732.7645447}
+data: {"run_id": "run_8fffc9c2b0", "event_type": "repository.searching", "payload": {"repository_id": "repo_e1fef84f"}, "timestamp": 1786885732.7650218}
+data: {"run_id": "run_8fffc9c2b0", "event_type": "retrieval.completed", "payload": {"context_length": 886}, "timestamp": 1786885732.7880313}
+data: {"run_id": "run_8fffc9c2b0", "event_type": "plan.created", "payload": {"plan": {"plan_id": "plan_routing_structure", "summary": "Plan for implementing routing structure in Netflix clone", "steps": [{"id": "step_1", "task": "Identify relevant components and pages", "tool": "repo_symbols", "depends_on": [], "files": ["src/App.jsx"], "status": "pending", "metadata": {}}, {"id": "step_2", "task": "Generate routing configuration", "tool": "llm_generate", "depends_on": ["step_1"], "files": ["src/App.jsx"], "status": "pending", "metadata": {}}], "affected_files": ["src/App.jsx"], "test_plan": ["Run unit tests for the updated App component"], "metadata": {"source": "llm", "mode": "PLAN"}}, "model": "qwen2.5-coder:3b-instruct-q4_0", "source": "llm"}, "timestamp": 1786885735.8787136}
+data: {"run_id": "run_8fffc9c2b0", "event_type": "coding.started", "payload": {"mode": "EXPLAIN", "model": "qwen2.5-coder:3b-instruct-q4_0"}, "timestamp": 1786885735.8789437}
+data: {"run_id": "run_8fffc9c2b0", "event_type": "coding.completed", "payload": {"response_length": 841}, "timestamp": 1786885738.899886}
+data: {"run_id": "run_8fffc9c2b0", "event_type": "agent.completed", "payload": {"status": "completed"}, "timestamp": 1786885738.900131}
+
+--- GATEWAY SSE VERIFICATION CHECKS ---
+Gateway Proxied 'data: {...}' Frames: True
+Run ID matched in gateway stream: True
+Authentication verified through Gateway: True
+
+VERDICT: GATEWAY SSE PROXY = PASS

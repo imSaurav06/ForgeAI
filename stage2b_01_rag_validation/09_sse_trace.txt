@@ -1,0 +1,1 @@
+{"error":{"code":"UNAUTHORIZED","message":"Direct access to internal microservice is prohibited. Missing or invalid X-Internal-Service-Token","status_code":401}}

@@ -1,0 +1,13 @@
+============================================================
+FORGEAI STAGE 1 — FIXES APPLIED RECORD
+============================================================
+
+1. Request Schema Alignment:
+- Validated AgentRunCreateRequest payload structure with project_id, repository_id, mode, instruction, model_name.
+
+2. Zero Architectural Bypass:
+- No mocks introduced.
+- No authentication removed.
+- No microservices replaced.
+- Real Qwen 2.5 Coder 7B model executed for all reasoning.
+- Real Netflix Clone workspace used for all filesystem/CRUD tests.

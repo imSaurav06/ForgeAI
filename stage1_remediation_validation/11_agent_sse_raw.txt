@@ -1,0 +1,29 @@
+FORGEAI STAGE 1 REMEDIATION — EVIDENCE 11: RAW AGENT SSE FRAMES
+Timestamp: 2026-08-16T12:18:00.000000+00:00
+Status: PASS (Direct Runtime Capture)
+======================================================================
+Endpoint: GET http://agent:8001/v1/agent/runs/run_56bc5d4896/stream
+Headers: Accept: text/event-stream, X-Internal-Service-Token: <valid_token>
+
+RAW SSE FRAMES:
+data: {"run_id": "run_56bc5d4896", "event_type": "agent.started", "payload": {"mode": "CODE", "instruction": "Create a new helper file src/utils/probe_helper.js with a formatTitle function"}, "timestamp": 1786882615.9883885}
+
+data: {"run_id": "run_56bc5d4896", "event_type": "repository.searching", "payload": {"repository_id": "repo_83917e04"}, "timestamp": 1786882615.9885252}
+
+data: {"run_id": "run_56bc5d4896", "event_type": "retrieval.completed", "payload": {"context_length": 760}, "timestamp": 1786882616.0173316}
+
+data: {"run_id": "run_56bc5d4896", "event_type": "plan.created", "payload": {"plan": {"plan_id": "plan_probe_helper", "summary": "Create a helper file src/utils/probe_helper.js with a formatTitle function", "steps": [{"id": "step_1", "task": "Retrieve relevant symbols from the repository", "tool": "repo_symbols", "depends_on": [], "files": ["src/App.jsx", "./components/SearchBar", "./pages/SearchResults"], "status": "pending", "metadata": {}}, {"id": "step_2", "task": "Generate a function signature for formatTitle", "tool": "llm_generate", "depends_on": ["step_1"], "files": [], "status": "pending", "metadata": {}}], "affected_files": ["src/utils/probe_helper.js"], "test_plan": ["Test the formatTitle function with various inputs to ensure it behaves as expected."], "metadata": {"source": "llm", "mode": "PLAN"}}, "model": "qwen2.5-coder:3b-instruct-q4_0", "source": "llm"}, "timestamp": 1786882619.5222712}
+
+data: {"run_id": "run_56bc5d4896", "event_type": "coding.started", "payload": {"mode": "CODE", "model": "qwen2.5-coder:3b-instruct-q4_0"}, "timestamp": 1786882619.522515}
+
+data: {"run_id": "run_56bc5d4896", "event_type": "coding.completed", "payload": {"response_length": 880}, "timestamp": 1786882623.2728384}
+
+data: {"run_id": "run_56bc5d4896", "event_type": "patch.created", "payload": {"status": "Applied patch successfully"}, "timestamp": 1786882623.3811748}
+
+data: {"run_id": "run_56bc5d4896", "event_type": "testing.started", "payload": {"repository_id": "repo_83917e04"}, "timestamp": 1786882623.3813744}
+
+data: {"run_id": "run_56bc5d4896", "event_type": "tests.failed", "payload": {"attempt": 1, "failure_output": "============================= test session starts ==============================\nplatform linux -- Python 3.12.14, pytest-9.1.1, pluggy-1.6.0\nrootdir: /host_f/3_Netflix_Clone\nplugins: anyio-4.14.2, asyncio-1.4.0\nasyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function\ncollected 0 items\n\n============================ no tests ran in 0.06s =============================\n"}, "timestamp": 1786882624.416895}
+
+data: {"run_id": "run_56bc5d4896", "event_type": "repair.started", "payload": {"repair_attempt": 1}, "timestamp": 1786882624.4172184}
+
+data: {"run_id": "run_56bc5d4896", "event_type": "agent.completed", "payload": {"status": "failed", "error": "LLM returned an empty patch with no file operations"}, "timestamp": 1786882626.332034}

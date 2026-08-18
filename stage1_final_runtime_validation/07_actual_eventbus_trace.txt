@@ -1,0 +1,57 @@
+============================================================
+FORGEAI STAGE 1 — 07 ACTUAL EVENTBUS TRACE EVIDENCE
+============================================================
+
+Run ID: run_0251c1eeac
+Repository ID: repo_e1fef84f
+Total Emitted Events: 7
+
+--- CHRONOLOGICAL EVENTBUS FRAMES ---
+Event #1:
+  Type: agent.started
+  Run ID: run_0251c1eeac
+  Timestamp: 1786885724.5009408
+  Payload: {"mode": "PLAN", "instruction": "Plan a small documentation addition for Netflix clone"}
+
+Event #2:
+  Type: repository.searching
+  Run ID: run_0251c1eeac
+  Timestamp: 1786885724.5026057
+  Payload: {"repository_id": "repo_e1fef84f"}
+
+Event #3:
+  Type: retrieval.completed
+  Run ID: run_0251c1eeac
+  Timestamp: 1786885724.5329056
+  Payload: {"context_length": 857}
+
+Event #4:
+  Type: plan.created
+  Run ID: run_0251c1eeac
+  Timestamp: 1786885727.842649
+  Payload: {"plan": {"plan_id": "plan_add_documentation", "summary": "Plan for adding documentation to Netflix clone", "steps": [{"id": "step_1", "task": "Identify relevant components for documentation", "tool": "repo_symbols", "depends_on": [], "files": ["src/App.jsx"], "status": "pending", "metadata": {}}, {"id": "step_2", "task": "Generate documentation content", "tool": "llm_generate", "depends_on": ["step_1"], "files": [], "status": "pending", "metadata": {}}], "affected_files": ["src/App.jsx", "README.md"], "test_plan": ["Verify that the new documentation is correctly displayed in the Netflix clone application."], "metadata": {"source": "llm", "mode": "PLAN"}}, "model": "qwen2.5-coder:3b-instruct-q4_0", "source": "llm"}
+
+Event #5:
+  Type: coding.started
+  Run ID: run_0251c1eeac
+  Timestamp: 1786885727.842876
+  Payload: {"mode": "PLAN", "model": "qwen2.5-coder:3b-instruct-q4_0"}
+
+Event #6:
+  Type: coding.completed
+  Run ID: run_0251c1eeac
+  Timestamp: 1786885730.5113683
+  Payload: {"response_length": 620}
+
+Event #7:
+  Type: agent.completed
+  Run ID: run_0251c1eeac
+  Timestamp: 1786885730.5115888
+  Payload: {"status": "completed"}
+
+--- EVENTBUS VERIFICATION CHECKS ---
+Emitted agent.started: True
+Emitted lifecycle events: ['agent.started', 'repository.searching', 'retrieval.completed', 'plan.created', 'coding.started', 'coding.completed', 'agent.completed']
+Emitted agent.completed: True
+
+VERDICT: EVENTBUS TRACE = PASS

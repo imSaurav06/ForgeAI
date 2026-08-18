@@ -1,0 +1,88 @@
+# Secrets / local environment
+.env
+.env.*
+!.env.example
+frontend/.env.local
+
+# Node
+node_modules/
+.next/
+out/
+dist/
+build/
+coverage/
+.npm/
+*.tsbuildinfo
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.venv/
+venv/
+env/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Logs
+*.log
+logs/
+
+# Archives / generated packages
+*.zip
+*.tar
+*.tar.gz
+*.7z
+*.rar
+
+# IDE / OS
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Temporary / scratch
+scratch/
+tmp/
+temp/
+
+# Local databases / vector stores
+*.db
+*.sqlite
+*.sqlite3
+
+# Generated evidence / reports
+stage*_*.txt
+
+# Documentation: keep only root README.md
+/**/*.md
+!README.md
+
+# Runtime / generated local data
+.mongo_data/
+.screenshots/
+tmp_b03_verification_workspaces/
+tmp_test/
+
+# Local smoke/test artifacts
+_forgeai_runtime_smoke.py
+_forgeai_tool_smoke_*.py
+forgeai_*.txt
+test.txt
+step9_evidence.json
+
+
+# Local ad-hoc authentication/WS smoke scripts containing test credentials
+test_agent.py
+test_ws.py
+
+# Local ad-hoc authentication/WS smoke scripts containing test credentials
+test_agent.py
+test_ws.py
+
+# Local authentication/WS smoke tests
+test_agent.py
+test_ws.py

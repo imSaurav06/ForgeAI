@@ -1,0 +1,145 @@
+[
+  {
+    "id": "Q1_ARCH",
+    "category": "A. Application architecture",
+    "question": "What is the high-level architecture and framework used for this frontend application?",
+    "ground_truth": "The project is a single-page React frontend application built with Vite and styled using Tailwind CSS.",
+    "source_files": [
+      "package.json",
+      "vite.config.js",
+      "src/App.jsx"
+    ],
+    "expected_facts": [
+      "React",
+      "Vite",
+      "Tailwind CSS",
+      "Single-page application structure"
+    ]
+  },
+  {
+    "id": "Q2_ENTRY",
+    "category": "B. Entry points",
+    "question": "What is the primary DOM entry point file and what root element ID does it mount onto?",
+    "ground_truth": "The entry point is src/main.jsx which mounts the <App /> component into the DOM element with ID 'root'.",
+    "source_files": [
+      "src/main.jsx",
+      "index.html"
+    ],
+    "expected_facts": [
+      "src/main.jsx",
+      "root",
+      "ReactDOM",
+      "App"
+    ]
+  },
+  {
+    "id": "Q3_APP_COMP",
+    "category": "C. Component relationships",
+    "question": "Which child UI components are imported and rendered inside the main App component in src/App.jsx?",
+    "ground_truth": "src/App.jsx imports and renders four components in order: Navbar, HeroSection, FeaturesSection, and Footer.",
+    "source_files": [
+      "src/App.jsx"
+    ],
+    "expected_facts": [
+      "Navbar",
+      "HeroSection",
+      "FeaturesSection",
+      "Footer"
+    ]
+  },
+  {
+    "id": "Q4_HERO",
+    "category": "G. UI structure / Hero",
+    "question": "What is the primary headline text and key metric badges displayed in HeroSection.jsx?",
+    "ground_truth": "HeroSection.jsx displays the headline 'TRANSFORM YOUR BODY', button 'JOIN NOW', and badges '500+ Active Members' and '50+ Expert Trainers'.",
+    "source_files": [
+      "src/components/HeroSection.jsx"
+    ],
+    "expected_facts": [
+      "TRANSFORM YOUR BODY",
+      "500+ Active Members",
+      "50+ Expert Trainers",
+      "JOIN NOW"
+    ]
+  },
+  {
+    "id": "Q5_FEATURES",
+    "category": "H. Specific components / Features",
+    "question": "What are the exact 4 core feature cards defined in FeaturesSection.jsx?",
+    "ground_truth": "FeaturesSection.jsx defines four features: 'Modern Equipment', 'Expert Trainers', 'Custom Workout Plans', and 'Flexible Timing'.",
+    "source_files": [
+      "src/components/FeaturesSection.jsx"
+    ],
+    "expected_facts": [
+      "Modern Equipment",
+      "Expert Trainers",
+      "Custom Workout Plans",
+      "Flexible Timing"
+    ]
+  },
+  {
+    "id": "Q6_NAVBAR",
+    "category": "D. Imports / Navbar",
+    "question": "What navigation links are defined in the Navbar component?",
+    "ground_truth": "Navbar.jsx defines links for Home, Programs, Trainers, and Pricing.",
+    "source_files": [
+      "src/components/Navbar.jsx"
+    ],
+    "expected_facts": [
+      "Home",
+      "Programs",
+      "Trainers",
+      "Pricing"
+    ]
+  },
+  {
+    "id": "Q7_CONFIG",
+    "category": "E. Configuration",
+    "question": "What plugins are configured in vite.config.js?",
+    "ground_truth": "vite.config.js configures the @vitejs/plugin-react plugin using defineConfig.",
+    "source_files": [
+      "vite.config.js"
+    ],
+    "expected_facts": [
+      "defineConfig",
+      "@vitejs/plugin-react",
+      "react()"
+    ]
+  },
+  {
+    "id": "Q8_STYLING",
+    "category": "G. Styling & Design",
+    "question": "What CSS directives and font imports are defined in src/index.css?",
+    "ground_truth": "src/index.css includes Tailwind directives (@tailwind base, components, utilities) and custom CSS rules for the gym landing page.",
+    "source_files": [
+      "src/index.css"
+    ],
+    "expected_facts": [
+      "@tailwind base",
+      "@tailwind components",
+      "@tailwind utilities"
+    ]
+  },
+  {
+    "id": "Q9_NEG_STRIPE",
+    "category": "J. Negative / Unavailable Info",
+    "question": "What is the Stripe API webhook secret key and endpoint configured in this repository?",
+    "ground_truth": "No Stripe API webhook or secret key exists in this repository. It is a static frontend landing page without payment processing backend code.",
+    "source_files": [],
+    "expected_facts": [
+      "No Stripe webhook configured",
+      "Information not present in repository"
+    ]
+  },
+  {
+    "id": "Q10_NEG_REDUX",
+    "category": "J. Negative / Unavailable Info",
+    "question": "Where is the Redux store configured and what slices are registered in the global state?",
+    "ground_truth": "There is no Redux store or Redux slices in this repository. The application does not use Redux for state management.",
+    "source_files": [],
+    "expected_facts": [
+      "No Redux store configured",
+      "Not present in repository"
+    ]
+  }
+]

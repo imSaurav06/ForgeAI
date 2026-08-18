@@ -1,0 +1,18 @@
+{
+  "qwen2.5-coder:3b-instruct-q4_0": {
+    "raw": "{\n  \"answer\": \"The features listed in FeaturesSection are 'Swimming Pool Only', 'No Trainers', and '24/7 Buffet'. The framework stated is Angular 17 Enterprise Edition.\",\n  \"references\": [\"src/components/FeaturesSection.jsx\"]\n}",
+    "parsed": "The features listed in FeaturesSection are 'Swimming Pool Only', 'No Trainers', and '24/7 Buffet'. The framework stated is Angular 17 Enterprise Edition.",
+    "references": [
+      "src/components/FeaturesSection.jsx"
+    ],
+    "compiled_prompt": "System: You are ForgeAI, an expert AI software engineering agent.\nFollow clean architecture, SOLID design principles, and production coding standards.\nNever introduce placeholders, dummy implementations, or hardcoded values.\nOnly modify code using retrieved repository context.\nReturn responses in valid JSON format exactly matching the requested schema.\nDo not return markdown fences, commentary, explanations outside the JSON object, or invented repository context.\nMode: ASK (Read-only Repository Query)\n\nUser Question: According to the provided repository context, what are the features listed in FeaturesSection and what framework is stated?\n\nRetrieved Repository Context:\n=== RETRIEVED REPOSITORY CONTEXT ===\n--- File: src/components/FeaturesSection.jsx ---\n// CORRUPTED TEST SNIPPET\nconst features = ['Swimming Pool Only', 'No Trainers', '24/7 Buffet'];\nconst framework = 'Angular 17 Enterprise Edition';\n\n\nRespond ONLY as a valid JSON object:\n{\n  \"answer\": \"Clear explanation answering the user's question\",\n  \"references\": [\"Relevant repository file or symbol references\"]\n}\n\nDo not return markdown or text outside the JSON object."
+  },
+  "qwen2.5-coder:7b-instruct-q4_0": {
+    "raw": "{\n  \"answer\": \"The features listed in FeaturesSection are 'Swimming Pool Only', 'No Trainers', and '24/7 Buffet'. The framework stated is 'Angular 17 Enterprise Edition'.\",\n  \"references\": [\"src/components/FeaturesSection.jsx\"]\n}",
+    "parsed": "The features listed in FeaturesSection are 'Swimming Pool Only', 'No Trainers', and '24/7 Buffet'. The framework stated is 'Angular 17 Enterprise Edition'.",
+    "references": [
+      "src/components/FeaturesSection.jsx"
+    ],
+    "compiled_prompt": "System: You are ForgeAI, an expert AI software engineering agent.\nFollow clean architecture, SOLID design principles, and production coding standards.\nNever introduce placeholders, dummy implementations, or hardcoded values.\nOnly modify code using retrieved repository context.\nReturn responses in valid JSON format exactly matching the requested schema.\nDo not return markdown fences, commentary, explanations outside the JSON object, or invented repository context.\nMode: ASK (Read-only Repository Query)\n\nUser Question: According to the provided repository context, what are the features listed in FeaturesSection and what framework is stated?\n\nRetrieved Repository Context:\n=== RETRIEVED REPOSITORY CONTEXT ===\n--- File: src/components/FeaturesSection.jsx ---\n// CORRUPTED TEST SNIPPET\nconst features = ['Swimming Pool Only', 'No Trainers', '24/7 Buffet'];\nconst framework = 'Angular 17 Enterprise Edition';\n\n\nRespond ONLY as a valid JSON object:\n{\n  \"answer\": \"Clear explanation answering the user's question\",\n  \"references\": [\"Relevant repository file or symbol references\"]\n}\n\nDo not return markdown or text outside the JSON object."
+  }
+}

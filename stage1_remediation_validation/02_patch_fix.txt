@@ -1,0 +1,43 @@
+FORGEAI STAGE 1 REMEDIATION — EVIDENCE 02: PATCH APPLICATION CONTROL FLOW
+Timestamp: 2026-08-16T12:15:00.000000+00:00
+Status: PASS (Direct Runtime & Unit Test Evidence)
+======================================================================
+
+1. UNIT TEST SUITE VALIDATION (pytest tests/test_p0_p1_remediation.py)
+----------------------------------------------------------------------
+Command: docker exec -w /app/workspace forge_agent pytest tests/test_p0_p1_remediation.py -k "test_apply_patch" -v
+Result: 7/7 PASSED (100%)
+
+- test_apply_patch_valid_fenced_json: PASSED (Fenced JSON extraction parsed and delegated)
+- test_apply_patch_valid_raw_json: PASSED (Raw JSON without fences parsed)
+- test_apply_patch_malformed_json_fails: PASSED (Malformed JSON raises explicit RuntimeError)
+- test_apply_patch_empty_patch_fails: PASSED (Empty patch with no operations raises RuntimeError)
+- test_apply_patch_invalid_schema_fails: PASSED (Non-list / invalid item types raise RuntimeError)
+- test_apply_patch_missing_repository_fails: PASSED (Missing repository_id raises RuntimeError)
+- test_apply_patch_tools_service_failure_propagates: PASSED (HTTP 500/error response propagates as failure)
+
+2. REAL RUNTIME TOOLS SERVICE PROBE VALIDATION
+---------------------------------------------
+Target Repository: repo_83917e04 (/host_f/3_Netflix_Clone)
+Probe File: stage1_p01_probe.txt
+
+Step A: Create File via /internal/v1/tools/apply-patch
+Payload: {"repository_id": "repo_83917e04", "files_to_create": [{"path": "stage1_p01_probe.txt", "content": "P0-1 Probe Content Line 1\n"}]}
+HTTP Response: 200 OK
+Data: {"success": True, "created_count": 1, "modified_count": 0, "deleted_count": 0}
+
+Step B: Read and Verify File Content via /internal/v1/tools/read-file
+HTTP Response: 200 OK
+Data: {"path": "stage1_p01_probe.txt", "content": "P0-1 Probe Content Line 1\n", "total_lines": 1}
+
+Step C: Schema Rejection Test (Missing repository_id)
+HTTP Response: 422 Unprocessable Entity (Rejected fail-closed)
+
+Step D: Clean up Probe File via /internal/v1/tools/delete-file
+HTTP Response: 200 OK
+Data: {"path": "stage1_p01_probe.txt", "status": "deleted"}
+
+Step E: Confirm Probe Absent via read-file
+HTTP Response: 404 Not Found (File does not exist)
+
+VERDICT: P0-1 = PASS

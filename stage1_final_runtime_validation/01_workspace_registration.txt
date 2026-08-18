@@ -1,0 +1,315 @@
+============================================================
+FORGEAI STAGE 1 — 01 TARGET WORKSPACE REGISTRATION EVIDENCE
+============================================================
+
+1. AUTHENTICATION:
+Status: 200
+User ID: usr_38066a7eb230
+Token: eyJhbGciOiJIUzI1NiIs...0xllSNjw_c
+
+2. FILESYSTEM ROOT BROWSE:
+Request: GET http://localhost:8000/api/v1/filesystem/browse
+Status: 200
+Response: {
+  "success": true,
+  "request_id": "-",
+  "trace_id": "-",
+  "timestamp": "2026-08-16T13:01:15.684982+00:00",
+  "message": "Filesystem directory listing retrieved",
+  "data": {
+    "path": "C:/",
+    "parent": "/",
+    "drives": [
+      {
+        "name": "C:",
+        "path": "C:/"
+      },
+      {
+        "name": "E:",
+        "path": "E:/"
+      },
+      {
+        "name": "F:",
+        "path": "F:/"
+      },
+      {
+        "name": "Workspace",
+        "path": "/app/workspace"
+      }
+    ],
+    "directories": [
+      {
+        "name": "$AV_ASW",
+        "path": "C:/$AV_ASW"
+      },
+      {
+        "name": "$Windows.~WS",
+        "path": "C:/$Windows.~WS"
+      },
+      {
+        "name": "Config.Msi",
+        "path": "C:/Config.Msi"
+      },
+      {
+        "name": "Drivers",
+        "path": "C:/Drivers"
+      },
+      {
+        "name": "inetpub",
+        "path": "C:/inetpub"
+      },
+      {
+        "name": "MinGW",
+        "path": "C:/MinGW"
+      },
+      {
+        "name": "nvm4w",
+        "path": "C:/nvm4w"
+      },
+      {
+        "name": "PerfLogs",
+        "path": "C:/PerfLogs"
+      },
+      {
+        "name": "Program Files",
+        "path": "C:/Program Files"
+      },
+      {
+        "name": "Program Files (x86)",
+        "path": "C:/Program Files (x86)"
+      },
+      {
+        "name": "ProgramData",
+        "path": "C:/ProgramData"
+      },
+      {
+        "name": "Recovery",
+        "path": "C:/Recovery"
+      },
+      {
+        "name": "Temp",
+        "path": "C:/Temp"
+      },
+      {
+        "name": "tmp",
+        "path": "C:/tmp"
+      },
+      {
+        "name": "Users",
+        "path": "C:/Users"
+      },
+      {
+        "name": "Windows",
+        "path": "C:/Windows"
+      },
+      {
+        "name": "XboxGames",
+        "path": "C:/XboxGames"
+      }
+    ]
+  }
+}
+
+3. FILESYSTEM DRIVE F:/ BROWSE:
+Request: GET http://localhost:8000/api/v1/filesystem/browse?path=F:/
+Status: 200
+Response: {
+  "success": true,
+  "request_id": "-",
+  "trace_id": "-",
+  "timestamp": "2026-08-16T13:01:15.706324+00:00",
+  "message": "Filesystem directory listing retrieved",
+  "data": {
+    "path": "F:/",
+    "parent": "/",
+    "drives": [
+      {
+        "name": "C:",
+        "path": "C:/"
+      },
+      {
+        "name": "E:",
+        "path": "E:/"
+      },
+      {
+        "name": "F:",
+        "path": "F:/"
+      },
+      {
+        "name": "Workspace",
+        "path": "/app/workspace"
+      }
+    ],
+    "directories": [
+      {
+        "name": "3_Netflix_Clone",
+        "path": "F:/3_Netflix_Clone"
+      },
+      {
+        "name": "5",
+        "path": "F:/5"
+      },
+      {
+        "name": "Docker",
+        "path": "F:/Docker"
+      },
+      {
+        "name": "ForgeAI",
+        "path": "F:/ForgeAI"
+      },
+      {
+        "name": "gymlanding",
+        "path": "F:/gymlanding"
+      },
+      {
+        "name": "partial_project_sess_1784990415054_u76zow7",
+        "path": "F:/partial_project_sess_1784990415054_u76zow7"
+      },
+      {
+        "name": "reactcalculator",
+        "path": "F:/reactcalculator"
+      },
+      {
+        "name": "software-engineer-portfolio",
+        "path": "F:/software-engineer-portfolio"
+      }
+    ]
+  }
+}
+
+4. NESTED DIRECTORY BROWSE (F:/3_Netflix_Clone):
+Request: GET http://localhost:8000/api/v1/filesystem/browse?path=F:/3_Netflix_Clone
+Status: 200
+Response: {
+  "success": true,
+  "request_id": "-",
+  "trace_id": "-",
+  "timestamp": "2026-08-16T13:01:15.733384+00:00",
+  "message": "Filesystem directory listing retrieved",
+  "data": {
+    "path": "F:/3_Netflix_Clone",
+    "parent": "F:/",
+    "drives": [
+      {
+        "name": "C:",
+        "path": "C:/"
+      },
+      {
+        "name": "E:",
+        "path": "E:/"
+      },
+      {
+        "name": "F:",
+        "path": "F:/"
+      },
+      {
+        "name": "Workspace",
+        "path": "/app/workspace"
+      }
+    ],
+    "directories": [
+      {
+        "name": ".pytest_cache",
+        "path": "F:/3_Netflix_Clone/.pytest_cache"
+      },
+      {
+        "name": "src",
+        "path": "F:/3_Netflix_Clone/src"
+      }
+    ]
+  }
+}
+
+5. REPOSITORY OPEN / REGISTRATION:
+Request: POST http://localhost:8000/api/v1/repositories/open
+Payload: {"path": "F:/3_Netflix_Clone"}
+Status: 200
+Response: {
+  "success": true,
+  "request_id": "-",
+  "trace_id": "-",
+  "timestamp": "2026-08-16T13:01:15.774983+00:00",
+  "message": "Repository opened successfully",
+  "data": {
+    "id": "repo_e1fef84f",
+    "name": "3_Netflix_Clone",
+    "path": "/host_f/3_Netflix_Clone",
+    "git_remote": null,
+    "branch": "main",
+    "user_id": "usr_38066a7eb230",
+    "created_at": "2026-08-16T13:01:01.045618+00:00",
+    "indexed_at": null
+  }
+}
+
+6. REPOSITORY METADATA:
+Request: GET http://localhost:8000/api/v1/repositories/repo_e1fef84f
+Status: 200
+Response: {
+  "success": true,
+  "request_id": "-",
+  "trace_id": "-",
+  "timestamp": "2026-08-16T13:01:15.789700+00:00",
+  "message": "Repository details retrieved",
+  "data": {
+    "id": "repo_e1fef84f",
+    "name": "3_Netflix_Clone",
+    "path": "/host_f/3_Netflix_Clone",
+    "git_remote": null,
+    "branch": "main",
+    "user_id": "usr_38066a7eb230",
+    "created_at": "2026-08-16T13:01:01.045618+00:00",
+    "indexed_at": null
+  }
+}
+
+7. REPOSITORY TREE:
+Request: GET http://localhost:8000/api/v1/repositories/repo_e1fef84f/tree
+Status: 200
+Response Tree Sample: {
+  "success": true,
+  "request_id": "-",
+  "trace_id": "-",
+  "timestamp": "2026-08-16T13:01:15.910704+00:00",
+  "message": "Repository file tree retrieved",
+  "data": [
+    {
+      "name": "index.html",
+      "path": "index.html",
+      "type": "file",
+      "size_bytes": 327,
+      "language": "html",
+      "children": null
+    },
+    {
+      "name": "package-lock.json",
+      "path": "package-lock.json",
+      "type": "file",
+      "size_bytes": 103249,
+      "language": "json",
+      "child...
+
+8. PATH TRAVERSAL ATTEMPT:
+Request: GET http://localhost:8000/api/v1/filesystem/browse?path=../../../../etc
+Status: 422
+Response: {
+  "success": false,
+  "request_id": "503a4b4f-6210-4499-ad98-aee445dc4c59",
+  "trace_id": "3c091ad0-48c8-4784-9f78-42b03a7aca30",
+  "timestamp": "2026-08-16T13:01:15.942838+00:00",
+  "code": "VALIDATION_ERROR",
+  "message": "Path '../../../../etc' is outside allowed drives and workspaces",
+  "service": "ForgeAI - Repository Service",
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "details": null
+  }
+}
+
+--- WORKSPACE VERIFICATION CHECKS ---
+No /root fallback: True
+Valid repository_id format (repo_e1fef84f): True
+Canonical filesystem path (/host_f/3_Netflix_Clone): True
+No path traversal (properly rejected): True
+
+VERDICT: WORKSPACE REGISTRATION PROVEN

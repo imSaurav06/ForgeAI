@@ -1,0 +1,17 @@
+FORGEAI STAGE 1 REMEDIATION — BASELINE HEALTH REPORT
+Timestamp: 2026-08-16T12:13:26.434517+00:00
+Environment: Real Docker Compose Microservices Architecture (Windows Host)
+============================================================
+
+[GATEWAY] Endpoint: http://localhost:8000/health | HTTP 200 | Healthy: True | Data: {"service":"api-gateway","status":"healthy","version":"0.1.0","timestamp":"2026-08-16T12:13:29.942841+00:00","details":{"status":"degraded","timestamp":"2026-08-16T12:13:29.942793+00:00","services":{"
+[AGENT] Endpoint: http://localhost:8001/health | HTTP 200 | Healthy: True | Data: {"service":"agent-service","status":"healthy","version":"0.1.0","timestamp":"2026-08-16T12:13:30.232315+00:00","details":{"mongodb":{"status":"healthy","mongodb_connected":true,"database_name":"forge_
+[LLM] Endpoint: http://localhost:8002/health | HTTP 200 | Healthy: True | Data: {"service":"llm-service","status":"healthy","version":"0.1.0","timestamp":"2026-08-16T12:13:30.568095+00:00","details":{"ollama":{"url":"http://host.docker.internal:11434"}}}
+[REPOSITORY] Endpoint: http://localhost:8003/health | HTTP 200 | Healthy: True | Data: {"service":"repository-service","status":"healthy","version":"0.1.0","timestamp":"2026-08-16T12:13:30.848051+00:00","details":{"mongodb":{"status":"healthy","mongodb_connected":true,"database_name":"f
+[RETRIEVAL] Endpoint: http://localhost:8004/health | HTTP 200 | Healthy: True | Data: {"service":"retrieval-service","status":"healthy","version":"0.1.0","timestamp":"2026-08-16T12:13:31.143552+00:00","details":{"qdrant":{"status":"healthy","qdrant_connected":true,"collection_name":"fo
+[TOOLS] Endpoint: http://localhost:8005/health | HTTP 200 | Healthy: True | Data: {"service":"tool-service","status":"healthy","version":"0.1.0","timestamp":"2026-08-16T12:13:31.439072+00:00","details":null}
+[GIT] Endpoint: http://localhost:8006/health | HTTP 200 | Healthy: True | Data: {"service":"git-service","status":"healthy","version":"0.1.0","timestamp":"2026-08-16T12:13:31.745670+00:00","details":null}
+[EVALUATION] Endpoint: http://localhost:8007/health | HTTP 200 | Healthy: True | Data: {"service":"evaluation-service","status":"healthy","version":"0.1.0","timestamp":"2026-08-16T12:13:32.067307+00:00","details":{"mongodb":{"status":"healthy","mongodb_connected":true,"database_name":"f
+[OLLAMA] Endpoint: http://localhost:11434/api/tags | HTTP 200 | Healthy: True | Data: {"models":[{"name":"qwen2.5-coder:7b-instruct-q4_0","model":"qwen2.5-coder:7b-instruct-q4_0","modified_at":"2026-08-11T03:12:34.3669336+05:30","size":4431404743,"digest":"8d7f257337d32a58f4a65c08e1544
+[QDRANT] Endpoint: http://localhost:6333/readyz | HTTP 200 | Healthy: True | Data: all shards are ready
+
+OVERALL MICROSERVICES HEALTH: PASS
