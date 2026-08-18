@@ -21,14 +21,14 @@ from services.gateway.app.api.dependencies.auth import generate_jwt_token
 from services.gateway.app.core.internal_auth import InternalAuthManager
 
 SERVICES = [
-    {"name": "Gateway", "port": 8000, "url": "http://localhost:8000"},
-    {"name": "Agent", "port": 8001, "url": "http://localhost:8001"},
-    {"name": "LLM", "port": 8002, "url": "http://localhost:8002"},
-    {"name": "Repository", "port": 8003, "url": "http://localhost:8003"},
-    {"name": "Retrieval", "port": 8004, "url": "http://localhost:8004"},
-    {"name": "Tools", "port": 8005, "url": "http://localhost:8005"},
-    {"name": "Git", "port": 8006, "url": "http://localhost:8006"},
-    {"name": "Evaluation", "port": 8007, "url": "http://localhost:8007"},
+    {"name": "Gateway", "port": 8000, "url": "http://127.0.0.1:8000"},
+    {"name": "Agent", "port": 8001, "url": "http://127.0.0.1:8001"},
+    {"name": "LLM", "port": 8002, "url": "http://127.0.0.1:8002"},
+    {"name": "Repository", "port": 8003, "url": "http://127.0.0.1:8003"},
+    {"name": "Retrieval", "port": 8004, "url": "http://127.0.0.1:8004"},
+    {"name": "Tools", "port": 8005, "url": "http://127.0.0.1:8005"},
+    {"name": "Git", "port": 8006, "url": "http://127.0.0.1:8006"},
+    {"name": "Evaluation", "port": 8007, "url": "http://127.0.0.1:8007"},
 ]
 
 
@@ -78,7 +78,7 @@ def test_gateway_api_matrix() -> dict[str, Any]:
     print("\n[2/3] VERIFYING GATEWAY PUBLIC API MATRIX...")
     token = generate_jwt_token(user_id="user_cert_admin", role="admin")
     headers = {"Authorization": f"Bearer {token}"}
-    base_url = "http://localhost:8000"
+    base_url = "http://127.0.0.1:8000"
 
     # Create lightweight test workspace directory
     test_dir = tempfile.mkdtemp(prefix="forge_cert_api_")

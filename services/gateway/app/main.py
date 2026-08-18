@@ -48,12 +48,6 @@ async def get_system_health_endpoint():
     return SuccessResponse(data=system_health, message="System health retrieved")
 
 
-async def get_aggregated_health():
-    """Health check callback querying all backend microservices with TTL cache."""
-    system_health = await health_aggregator.get_system_health()
-    return system_health.model_dump()
-
-
 app = create_app(
     service_name="api-gateway",
     service_version="0.1.0",
@@ -61,7 +55,6 @@ app = create_app(
     routers=[v1_router, metrics_router],
     startup_hooks=[init_mongodb_indexes],
     shutdown_hooks=[close_mongodb_connection],
-    health_details_provider=get_aggregated_health,
 )
 
 # Add Gateway Production Middlewares
