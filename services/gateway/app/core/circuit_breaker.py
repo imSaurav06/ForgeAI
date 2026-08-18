@@ -20,8 +20,8 @@ class CircuitBreaker:
     def __init__(
         self,
         service_name: str,
-        failure_threshold: int = 3,
-        recovery_timeout: float = 10.0,
+        failure_threshold: int = 5,
+        recovery_timeout: float = 2.0,
     ) -> None:
         self.service_name = service_name
         self.failure_threshold = failure_threshold

@@ -1,5 +1,7 @@
-from pathlib import Path
+import tempfile
 import uuid
+from pathlib import Path
+
 import pytest
 from fastapi.testclient import TestClient
 
@@ -14,6 +16,15 @@ def get_auth_headers() -> dict[str, str]:
     return {"Authorization": f"Bearer {token}"}
 
 
+@pytest.fixture(scope="module")
+def sample_repo_path() -> str:
+    temp_dir = tempfile.mkdtemp(prefix="forge_gw_test_repo_")
+    p = Path(temp_dir).resolve()
+    (p / "main.py").write_text("import jwt\n\ndef validate_token():\n    return True\n", encoding="utf-8")
+    (p / "utils.py").write_text("def helper():\n    return 42\n", encoding="utf-8")
+    return str(p).replace("\\", "/")
+
+
 def test_gateway_health_aggregation():
     """Verify GET /health returns aggregated system health status."""
     response = client.get("/health")
@@ -23,15 +34,14 @@ def test_gateway_health_aggregation():
     assert data["status"] in ["healthy", "degraded", "unhealthy"]
 
 
-def test_projects_endpoints():
+def test_projects_endpoints(sample_repo_path: str):
     """Verify /api/v1/projects CRUD routes."""
     headers = get_auth_headers()
-    repo_root = str(Path(".").resolve()).replace("\\", "/")
     # Create Project
     create_resp = client.post(
         "/api/v1/projects",
         headers=headers,
-        json={"name": f"Auth Engine {uuid.uuid4().hex[:6]}", "path": repo_root, "description": "Authentication microservice"},
+        json={"name": f"Auth Engine {uuid.uuid4().hex[:6]}", "path": sample_repo_path, "description": "Authentication microservice"},
     )
     assert create_resp.status_code == 201
     assert create_resp.json()["success"] is True
@@ -53,13 +63,12 @@ def test_projects_endpoints():
     assert del_resp.json()["data"]["deleted_id"] == proj_id
 
 
-def test_repositories_endpoints():
+def test_repositories_endpoints(sample_repo_path: str):
     """Verify /api/v1/repositories endpoints."""
     headers = get_auth_headers()
-    repo_root = str(Path(".").resolve()).replace("\\", "/")
 
     # Open Repo
-    open_resp = client.post("/api/v1/repositories/open", headers=headers, json={"path": repo_root})
+    open_resp = client.post("/api/v1/repositories/open", headers=headers, json={"path": sample_repo_path})
     assert open_resp.status_code == 200
     assert open_resp.json()["success"] is True
     repo_id = open_resp.json()["data"]["id"]
@@ -115,12 +124,10 @@ def test_conversations_endpoints():
     assert detail["messages"][0]["content"] == "How do I implement JWT auth in FastAPI?"
 
 
-def test_agent_endpoints():
+def test_agent_endpoints(sample_repo_path: str):
     """Verify /api/v1/agent endpoints and SSE stream scaffold."""
     headers = get_auth_headers()
-    repo_root = str(Path(".").resolve()).replace("\\", "/")
-    # Open Repo first
-    open_resp = client.post("/api/v1/repositories/open", headers=headers, json={"path": repo_root})
+    open_resp = client.post("/api/v1/repositories/open", headers=headers, json={"path": sample_repo_path})
     repo_id = open_resp.json()["data"]["id"]
 
     # Create Run
@@ -201,11 +208,10 @@ def test_git_endpoints():
     assert restore_resp.status_code in (200, 201, 400, 422)
 
 
-def test_search_endpoints():
+def test_search_endpoints(sample_repo_path: str):
     """Verify /api/v1/search endpoints."""
     headers = get_auth_headers()
-    repo_root = str(Path(".").resolve()).replace("\\", "/")
-    open_resp = client.post("/api/v1/repositories/open", headers=headers, json={"path": repo_root})
+    open_resp = client.post("/api/v1/repositories/open", headers=headers, json={"path": sample_repo_path})
     repo_id = open_resp.json()["data"]["id"]
 
     # Code Search
