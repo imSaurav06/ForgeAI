@@ -491,3 +491,27 @@ class ToolExecutionService:
             cwd=repo_path,
             base_root=repo_path,
         )
+
+    async def run_typecheck(
+        self,
+        target_path: str | None = None,
+        repository_id: str | None = None,
+    ) -> dict[str, Any]:
+        repo_path = self._require_repo_path(repository_id)
+
+        safe_target = (
+            str(
+                self.sandbox.validate_safe_path(
+                    target_path,
+                    base_root=repo_path,
+                )
+            )
+            if target_path
+            else None
+        )
+
+        return await self.quality_runners.run_typecheck(
+            target_path=safe_target,
+            cwd=repo_path,
+            base_root=repo_path,
+        )

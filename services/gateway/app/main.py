@@ -5,6 +5,7 @@ from services.gateway.app.api.middleware.rate_limit import RateLimitMiddleware
 from services.gateway.app.api.routers import (
     agent_router,
     auth_router,
+    conversations_router,
     filesystem_router,
     git_router,
     models_router,
@@ -27,6 +28,7 @@ from shared.schemas.responses import SuccessResponse
 # Create Version 1 API Master Router
 v1_router = APIRouter(prefix=settings.api_v1_prefix)
 v1_router.include_router(auth_router)
+v1_router.include_router(conversations_router)
 v1_router.include_router(projects_router)
 v1_router.include_router(repositories_router)
 v1_router.include_router(filesystem_router)

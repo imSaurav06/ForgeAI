@@ -161,3 +161,50 @@ class RetrievalService:
         )
         context_result["repository_id"] = repository_id
         return context_result
+
+    async def retrieve_related_code(self, repository_id: str, query: str, limit: int = 5) -> list[dict[str, Any]]:
+        """Retrieve code snippets related to a given symbol or file."""
+        return await self.hybrid_search(repository_id=repository_id, query=query, limit=limit)
+
+    async def retrieve_tests(self, repository_id: str, module_name: str, limit: int = 5) -> list[dict[str, Any]]:
+        """Retrieve test files and test functions related to a module."""
+        repo_data = await self._fetch_repo_data(repository_id)
+        files = repo_data.get("files", [])
+        test_files = [
+            f for f in files
+            if "test" in f.get("path", "").lower() or (module_name.lower() in f.get("path", "").lower() and "test" in f.get("path", "").lower())
+        ]
+        results = []
+        for tf in test_files[:limit]:
+            results.append({
+                "file_path": tf.get("path"),
+                "snippet": f"# Test suite for {module_name} in {tf.get('path')}",
+                "start_line": 1,
+                "end_line": 1,
+                "score": 1.0,
+                "type": "test_file",
+            })
+        if not results:
+            return await self.semantic_search(repository_id=repository_id, query=f"test {module_name}", limit=limit)
+        return results
+
+    async def retrieve_documentation(self, repository_id: str, query: str, limit: int = 5) -> list[dict[str, Any]]:
+        """Retrieve markdown and documentation snippets for a query."""
+        repo_data = await self._fetch_repo_data(repository_id)
+        files = repo_data.get("files", [])
+        doc_files = [f for f in files if f.get("path", "").lower().endswith((".md", ".rst", ".txt")) or "doc" in f.get("path", "").lower()]
+        results = []
+        q_lower = query.lower()
+        for df in doc_files[:limit]:
+            results.append({
+                "file_path": df.get("path"),
+                "snippet": f"# Documentation: {df.get('path')}",
+                "start_line": 1,
+                "end_line": 1,
+                "score": 0.9,
+                "type": "documentation",
+            })
+        if not results:
+            return await self.semantic_search(repository_id=repository_id, query=f"documentation {query}", limit=limit)
+        return results
+

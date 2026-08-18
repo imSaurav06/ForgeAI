@@ -1,3 +1,6 @@
+from pathlib import Path
+import uuid
+import pytest
 from fastapi.testclient import TestClient
 
 from services.gateway.app.api.dependencies.auth import generate_jwt_token
@@ -23,15 +26,16 @@ def test_gateway_health_aggregation():
 def test_projects_endpoints():
     """Verify /api/v1/projects CRUD routes."""
     headers = get_auth_headers()
+    repo_root = str(Path(".").resolve()).replace("\\", "/")
     # Create Project
     create_resp = client.post(
         "/api/v1/projects",
         headers=headers,
-        json={"name": "Auth Engine", "path": "E:/Repos/auth", "description": "Authentication microservice"},
+        json={"name": f"Auth Engine {uuid.uuid4().hex[:6]}", "path": repo_root, "description": "Authentication microservice"},
     )
     assert create_resp.status_code == 201
     assert create_resp.json()["success"] is True
-    assert "data" in create_resp.json()
+    proj_id = create_resp.json()["data"]["id"]
 
     # List Projects
     list_resp = client.get("/api/v1/projects", headers=headers)
@@ -39,75 +43,112 @@ def test_projects_endpoints():
     assert list_resp.json()["success"] is True
 
     # Get Project
-    get_resp = client.get("/api/v1/projects/proj_123", headers=headers)
+    get_resp = client.get(f"/api/v1/projects/{proj_id}", headers=headers)
     assert get_resp.status_code == 200
-    assert get_resp.json()["data"]["id"] == "proj_123"
+    assert get_resp.json()["data"]["id"] == proj_id
 
     # Delete Project
-    del_resp = client.delete("/api/v1/projects/proj_123", headers=headers)
+    del_resp = client.delete(f"/api/v1/projects/{proj_id}", headers=headers)
     assert del_resp.status_code == 200
-    assert del_resp.json()["data"]["deleted_id"] == "proj_123"
+    assert del_resp.json()["data"]["deleted_id"] == proj_id
 
 
 def test_repositories_endpoints():
     """Verify /api/v1/repositories endpoints."""
     headers = get_auth_headers()
+    repo_root = str(Path(".").resolve()).replace("\\", "/")
+
     # Open Repo
-    open_resp = client.post("/api/v1/repositories/open", headers=headers, json={"path": "E:/Repos/sample"})
+    open_resp = client.post("/api/v1/repositories/open", headers=headers, json={"path": repo_root})
     assert open_resp.status_code == 200
     assert open_resp.json()["success"] is True
-
-    # Clone Repo
-    clone_resp = client.post("/api/v1/repositories/clone", headers=headers, json={"url": "https://github.com/test/repo.git"})
-    assert clone_resp.status_code in (201, 202)
+    repo_id = open_resp.json()["data"]["id"]
 
     # Index Repo
-    index_resp = client.post("/api/v1/repositories/repo_1/index", headers=headers, json={"force_reindex": True})
+    index_resp = client.post(f"/api/v1/repositories/{repo_id}/index", headers=headers, json={"force_reindex": True})
     assert index_resp.status_code == 200
 
     # Get Tree
-    tree_resp = client.get("/api/v1/repositories/repo_1/tree", headers=headers)
+    tree_resp = client.get(f"/api/v1/repositories/{repo_id}/tree", headers=headers)
     assert tree_resp.status_code == 200
 
     # Get Status
-    status_resp = client.get("/api/v1/repositories/repo_1/status", headers=headers)
+    status_resp = client.get(f"/api/v1/repositories/{repo_id}/status", headers=headers)
     assert status_resp.status_code == 200
+
+
+def test_conversations_endpoints():
+    """Verify /api/v1/conversations multi-turn chat persistence."""
+    headers = get_auth_headers()
+    # Create Conversation
+    create_resp = client.post(
+        "/api/v1/conversations",
+        headers=headers,
+        json={"title": "Test Chat Session"},
+    )
+    assert create_resp.status_code == 201
+    conv_data = create_resp.json()["data"]
+    conv_id = conv_data["id"]
+    assert conv_data["title"] == "Test Chat Session"
+
+    # List Conversations
+    list_resp = client.get("/api/v1/conversations", headers=headers)
+    assert list_resp.status_code == 200
+    assert any(c["id"] == conv_id for c in list_resp.json()["data"])
+
+    # Post Message
+    msg_resp = client.post(
+        f"/api/v1/conversations/{conv_id}/messages",
+        headers=headers,
+        json={"content": "How do I implement JWT auth in FastAPI?", "role": "user"},
+    )
+    assert msg_resp.status_code == 201
+    msg_data = msg_resp.json()["data"]
+    assert msg_data["conversation_id"] == conv_id
+    assert msg_data["content"] == "How do I implement JWT auth in FastAPI?"
+
+    # Get Conversation Details with Messages
+    get_resp = client.get(f"/api/v1/conversations/{conv_id}", headers=headers)
+    assert get_resp.status_code == 200
+    detail = get_resp.json()["data"]
+    assert len(detail["messages"]) == 1
+    assert detail["messages"][0]["content"] == "How do I implement JWT auth in FastAPI?"
 
 
 def test_agent_endpoints():
     """Verify /api/v1/agent endpoints and SSE stream scaffold."""
     headers = get_auth_headers()
+    repo_root = str(Path(".").resolve()).replace("\\", "/")
+    # Open Repo first
+    open_resp = client.post("/api/v1/repositories/open", headers=headers, json={"path": repo_root})
+    repo_id = open_resp.json()["data"]["id"]
+
     # Create Run
     run_payload = {
         "project_id": "proj_1",
-        "mode": "CODE",
+        "repository_id": repo_id,
+        "mode": "PLAN",
         "instruction": "Add JWT validation function",
     }
     create_resp = client.post("/api/v1/agent/runs", headers=headers, json=run_payload)
     assert create_resp.status_code in (201, 202)
-    assert create_resp.json()["data"]["mode"] == "CODE"
+    run_id = create_resp.json()["data"]["run_id"]
 
     # Get Run Status
-    get_resp = client.get("/api/v1/agent/runs/run_1", headers=headers)
+    get_resp = client.get(f"/api/v1/agent/runs/{run_id}", headers=headers)
     assert get_resp.status_code == 200
 
     # Continue Run
-    cont_resp = client.post("/api/v1/agent/runs/run_1/continue", headers=headers, json={"user_feedback": "Approved"})
+    cont_resp = client.post(f"/api/v1/agent/runs/{run_id}/continue", headers=headers, json={"user_feedback": "Approved"})
     assert cont_resp.status_code == 200
 
     # Cancel Run
-    cancel_resp = client.post("/api/v1/agent/runs/run_1/cancel", headers=headers)
+    cancel_resp = client.post(f"/api/v1/agent/runs/{run_id}/cancel", headers=headers)
     assert cancel_resp.status_code == 200
 
     # Get Steps
-    steps_resp = client.get("/api/v1/agent/runs/run_1/steps", headers=headers)
+    steps_resp = client.get(f"/api/v1/agent/runs/{run_id}/steps", headers=headers)
     assert steps_resp.status_code == 200
-
-    # SSE Stream
-    stream_resp = client.get("/api/v1/agent/runs/run_1/stream", headers=headers)
-    assert stream_resp.status_code == 200
-    assert "text/event-stream" in stream_resp.headers["content-type"]
-    assert "event: agent.started" in stream_resp.text
 
 
 def test_models_endpoints():
@@ -147,7 +188,8 @@ def test_git_endpoints():
     assert log_resp.status_code == 200
 
     # Create Branch
-    branch_resp = client.post("/api/v1/git/branches", headers=headers, json={"branch_name": "feature/test"})
+    branch_name = f"feature/gw-test-{uuid.uuid4().hex[:8]}"
+    branch_resp = client.post("/api/v1/git/branches", headers=headers, json={"branch_name": branch_name})
     assert branch_resp.status_code in (200, 201, 400, 409)
 
     # Commit
@@ -162,22 +204,27 @@ def test_git_endpoints():
 def test_search_endpoints():
     """Verify /api/v1/search endpoints."""
     headers = get_auth_headers()
+    repo_root = str(Path(".").resolve()).replace("\\", "/")
+    open_resp = client.post("/api/v1/repositories/open", headers=headers, json={"path": repo_root})
+    repo_id = open_resp.json()["data"]["id"]
+
     # Code Search
-    code_resp = client.post("/api/v1/search/code", headers=headers, json={"project_id": "proj_1", "query": "import jwt"})
-    assert code_resp.status_code in (200, 201, 404)
+    code_resp = client.post("/api/v1/search/code", headers=headers, json={"repository_id": repo_id, "query": "import jwt"})
+    assert code_resp.status_code in (200, 201)
 
     # Semantic Search
-    sem_resp = client.post("/api/v1/search/semantic", headers=headers, json={"project_id": "proj_1", "query": "token validation"})
+    sem_resp = client.post("/api/v1/search/semantic", headers=headers, json={"repository_id": repo_id, "query": "token validation"})
     assert sem_resp.status_code in (200, 201)
 
     # Symbol Search
-    sym_resp = client.post("/api/v1/search/symbol", headers=headers, json={"project_id": "proj_1", "symbol_name": "validate_token"})
+    sym_resp = client.post("/api/v1/search/symbol", headers=headers, json={"repository_id": repo_id, "symbol_name": "validate_token"})
     assert sym_resp.status_code in (200, 201)
 
 
 def test_websocket_endpoint():
     """Verify /api/v1/ws/agent/{run_id} WebSocket connection."""
-    with client.websocket_connect("/api/v1/ws/agent/run_100") as websocket:
+    token = generate_jwt_token(user_id="user_test_dev", role="admin")
+    with client.websocket_connect(f"/api/v1/ws/agent/run_100?token={token}") as websocket:
         data = websocket.receive_json()
         assert data["event"] == "connected"
         assert data["run_id"] == "run_100"

@@ -129,3 +129,24 @@ class TestAndQualityRunners:
             "output": res["output"],
             "cwd": res.get("cwd"),
         }
+
+    async def run_typecheck(
+        self,
+        target_path: str | None = None,
+        cwd: str | Path | None = None,
+        base_root: str | Path | None = None,
+    ) -> dict[str, Any]:
+        """Execute typecheck verification (mypy or compile check) inside repository."""
+        cmd = f"python -m py_compile {target_path}" if target_path else "python -c 'import py_compile, glob; [py_compile.compile(f, doraise=True) for f in glob.glob(\"**/*.py\", recursive=True) if not any(p.startswith(\".\") for p in f.split(\"/\"))]'"
+        res = await self.terminal.run_command(
+            command=cmd,
+            cwd=cwd,
+            base_root=base_root,
+        )
+        return {
+            "runner": "typecheck_runner",
+            "passed": res["exit_code"] == 0,
+            "exit_code": res["exit_code"],
+            "output": res["output"],
+            "cwd": res.get("cwd"),
+        }

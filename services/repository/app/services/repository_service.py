@@ -400,4 +400,92 @@ class RepositoryService:
             directories=subdirs,
         )
 
+    def search_code(self, repository_id: str, query: str, limit: int = 50) -> list[dict[str, Any]]:
+        """Search code text occurrences across repository files."""
+        meta = self.get_repository_metadata(repository_id)
+        repo_root = Path(meta.path).resolve()
+        if not query:
+            return []
+        matches: list[dict[str, Any]] = []
+        q_lower = query.lower()
+        for root, _, files in os.walk(repo_root):
+            if any(p.startswith(".") or p in ("node_modules", ".venv", "__pycache__", ".git") for p in Path(root).parts):
+                continue
+            for file in files:
+                f_path = Path(root) / file
+                try:
+                    if f_path.stat().st_size > 1_000_000:
+                        continue
+                    text = f_path.read_text(encoding="utf-8", errors="ignore")
+                    if q_lower in text.lower():
+                        rel_path = str(f_path.relative_to(repo_root)).replace("\\", "/")
+                        for idx, line in enumerate(text.splitlines(), start=1):
+                            if q_lower in line.lower():
+                                matches.append({
+                                    "file_path": rel_path,
+                                    "line_number": idx,
+                                    "start_line": idx,
+                                    "end_line": idx,
+                                    "line_content": line.strip(),
+                                    "snippet": line.strip(),
+                                    "symbol": None,
+                                    "score": 1.0,
+                                })
+                                if len(matches) >= limit:
+                                    return matches
+                except Exception:
+                    continue
+        return matches
+
+    def search_symbol(self, repository_id: str, symbol_name: str, limit: int = 20) -> list[dict[str, Any]]:
+        """Search AST symbols matching identifier query."""
+        symbols = self.get_symbols(repository_id)
+        q = symbol_name.lower()
+        matches: list[dict[str, Any]] = []
+        for s in symbols:
+            name = s.get("name") or s.get("symbol") or ""
+            if q in name.lower():
+                matches.append({
+                    "file_path": s.get("file") or s.get("file_path", ""),
+                    "symbol": name,
+                    "symbol_type": s.get("type") or s.get("symbol_type", "function"),
+                    "start_line": s.get("start_line", 1),
+                    "end_line": s.get("end_line", 1),
+                    "snippet": s.get("signature") or s.get("snippet", ""),
+                    "score": 1.0 if q == name.lower() else 0.8,
+                })
+                if len(matches) >= limit:
+                    break
+        return matches
+
+    def find_references(self, repository_id: str, symbol_name: str, limit: int = 50) -> list[dict[str, Any]]:
+        """Find occurrences and references of a symbol identifier."""
+        return self.search_code(repository_id, symbol_name, limit=limit)
+
+    def get_imports(self, repository_id: str, file_path: str | None = None) -> list[dict[str, Any]]:
+        """Retrieve imported module dependencies."""
+        graph = self.get_dependencies(repository_id)
+        internal_edges = graph.get("internal_edges", [])
+        external_pkgs = graph.get("external_packages", [])
+        results: list[dict[str, Any]] = []
+        for edge in internal_edges:
+            if not file_path or edge.get("source") == file_path:
+                results.append({"source": edge.get("source"), "target": edge.get("target"), "type": "internal"})
+        for pkg in external_pkgs:
+            results.append({"source": "all", "target": pkg, "type": "external"})
+        return results
+
+    async def delete_repository(self, repository_id: str) -> dict[str, Any]:
+        """Delete repository metadata from memory and MongoDB."""
+        meta = self.get_repository_metadata(repository_id)
+        if repository_id in self._registered_repos:
+            del self._registered_repos[repository_id]
+        self.cache.delete(repository_id)
+        try:
+            await self.mongo_repo.delete_repository(repository_id)
+        except Exception:
+            pass
+        return {"deleted_id": repository_id, "success": True}
+
+
 
