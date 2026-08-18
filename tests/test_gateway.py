@@ -17,12 +17,15 @@ def get_auth_headers() -> dict[str, str]:
 
 
 @pytest.fixture(scope="module")
-def sample_repo_path() -> str:
-    temp_dir = tempfile.mkdtemp(prefix="forge_gw_test_repo_")
-    p = Path(temp_dir).resolve()
-    (p / "main.py").write_text("import jwt\n\ndef validate_token():\n    return True\n", encoding="utf-8")
-    (p / "utils.py").write_text("def helper():\n    return 42\n", encoding="utf-8")
-    return str(p).replace("\\", "/")
+def sample_repo_path():
+    temp_dir = Path("tests") / f"temp_gw_{uuid.uuid4().hex[:8]}"
+    temp_dir.mkdir(parents=True, exist_ok=True)
+    (temp_dir / "main.py").write_text("import jwt\n\ndef validate_token():\n    return True\n", encoding="utf-8")
+    (temp_dir / "utils.py").write_text("def helper():\n    return 42\n", encoding="utf-8")
+    abs_path = str(temp_dir.resolve()).replace("\\", "/")
+    yield abs_path
+    import shutil
+    shutil.rmtree(temp_dir, ignore_errors=True)
 
 
 def test_gateway_health_aggregation():
