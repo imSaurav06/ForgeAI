@@ -35,7 +35,10 @@ logs/
 *.tar.gz
 *.7z
 *.rar
-
+*.txt
+*.md
+*.png
+*.webp
 # IDE / OS
 .vscode/
 .idea/
@@ -48,6 +51,10 @@ Thumbs.db
 scratch/
 tmp/
 temp/
+stage*/
+docs/
+# Local validation / runtime evidence
+**/stage*/
 
 # Local databases / vector stores
 *.db

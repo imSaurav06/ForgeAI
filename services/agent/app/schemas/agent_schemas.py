@@ -38,8 +38,12 @@ class AgentRunStatusResponse(BaseModel):
     repair_count: int = Field(..., description="Count of self-correction repair loops executed")
     execution_plan: dict[str, Any] | list[dict[str, Any]] = Field(default_factory=list, description="Decomposed plan steps")
     steps: list[dict[str, Any]] = Field(default_factory=list, description="Execution steps history")
+    commit_approved: bool = Field(default=False, description="Commit approval status")
+    commit_pending: bool = Field(default=False, description="Commit pending approval status")
+    commit_proposal: dict[str, Any] = Field(default_factory=dict, description="Commit proposal metadata")
     created_at: float = Field(..., description="Creation epoch timestamp")
     updated_at: float = Field(..., description="Last update epoch timestamp")
+
 
 
 class AgentEventItem(BaseModel):

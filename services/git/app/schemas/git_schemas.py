@@ -78,9 +78,34 @@ class GitUnstageRequest(BaseModel):
     repository_id: str | None = Field(default=None, description="Optional target repository ID")
 
 
+class GitRemoteItem(BaseModel):
+    """Git remote configuration item."""
+
+    name: str = Field(..., description="Remote name (e.g., origin)")
+    url: str = Field(..., description="Remote repository URL")
+    type: str = Field(default="", description="Remote type (fetch or push)")
+
+
+class GitPushRequest(BaseModel):
+    """Payload to push branch to remote repository."""
+
+    branch_name: str | None = Field(default=None, description="Optional branch name to push")
+    remote: str = Field(default="origin", description="Target remote name")
+    set_upstream: bool = Field(default=True, description="Whether to set upstream branch tracking")
+    repository_id: str | None = Field(default=None, description="Optional target repository ID")
+
+
 class GitActionResponse(BaseModel):
     """Generic Git action status response model."""
 
     status: str = Field(default="success", description="Action status")
     success: bool = Field(default=True, description="Success flag")
     message: str = Field(..., description="Details message")
+    commit_hash: str | None = Field(default=None, description="Created commit hash if applicable")
+    branch_name: str | None = Field(default=None, description="Created branch name if applicable")
+    branch: str | None = Field(default=None, description="Pushed branch name if applicable")
+    remote: str | None = Field(default=None, description="Target remote name if applicable")
+    exit_code: int | None = Field(default=None, description="Subprocess exit code if applicable")
+    stdout: str | None = Field(default=None, description="Command stdout")
+    stderr: str | None = Field(default=None, description="Command stderr")
+

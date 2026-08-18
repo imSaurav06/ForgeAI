@@ -40,12 +40,14 @@ class RepositoryService:
         repo_id = f"repo_{uuid.uuid4().hex[:8]}"
         meta = RepositoryMetadata(
             id=repo_id,
+            repository_id=repo_id,
             name=name,
             path=path,
             git_remote=git_remote,
             branch=branch,
             user_id=user_id,
         )
+
         self._registered_repos[repo_id] = meta
 
         # Persist to MongoDB synchronously/asynchronously via background task or helper

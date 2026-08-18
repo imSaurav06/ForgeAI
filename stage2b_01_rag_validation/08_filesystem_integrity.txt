@@ -1,5 +1,0 @@
-Initial file count: 36
-Post-probe file count: 36
-Modified files: 0
-Stray files: 0
-Status: PASS

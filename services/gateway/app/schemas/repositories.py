@@ -34,13 +34,15 @@ class RepoTreeNode(BaseModel):
 class RepoStatusResponse(BaseModel):
     """Repository parsing & indexing status."""
 
-    repository_id: str = Field(..., description="Repository ID")
+    id: str | None = Field(default=None, description="Repository ID alias")
+    repository_id: str = Field(default="", description="Repository ID")
     path: str = Field(..., description="Local repo path")
     total_files: int = Field(default=0, description="Total source files discovered")
     indexed_files: int = Field(default=0, description="Total indexed files")
     status: str = Field(default="idle", description="Indexing status: idle, indexing, completed, failed")
     languages: list[str] = Field(default_factory=list, description="Detected programming languages")
     metadata: dict[str, Any] = Field(default_factory=dict, description="Additional repo metadata")
+
 
 
 class FileWriteRequest(BaseModel):

@@ -27,7 +27,7 @@ def generate_jwt_token(
     """Generate a signed Bearer JWT token with user identity and claims."""
     settings = get_settings()
     secret = secret_key or settings.jwt_secret
-    exp_minutes = expiration_minutes or settings.jwt_expiration_minutes
+    exp_minutes = int(expiration_minutes or settings.jwt_expiration_minutes or 1440)
 
     now = time.time()
     payload = {
@@ -38,6 +38,7 @@ def generate_jwt_token(
         "exp": int(now + exp_minutes * 60),
         "iss": "forge-ai-gateway",
     }
+
     return jwt.encode(payload, secret, algorithm=settings.jwt_algorithm)
 
 

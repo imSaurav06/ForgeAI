@@ -25,8 +25,12 @@ class AgentExecutionRun(BaseModel):
     test_history: list[dict[str, Any]] = Field(default_factory=list, description="Test execution & failure log")
     steps: list[dict[str, Any]] = Field(default_factory=list, description="Step execution history")
     repair_count: int = Field(default=0, description="Self-correction repair iterations count")
+    commit_approved: bool = Field(default=False, description="Whether human approval has been granted for git commit")
+    commit_pending: bool = Field(default=False, description="Whether a git commit is awaiting human approval")
+    commit_proposal: dict[str, Any] = Field(default_factory=dict, description="Proposed commit metadata awaiting approval")
     created_at: float = Field(default_factory=time.time, description="Creation timestamp")
     updated_at: float = Field(default_factory=time.time, description="Last update timestamp")
+
 
 
 class AgentSessionStore:

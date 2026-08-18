@@ -41,11 +41,37 @@ class SecuritySandbox:
 
     def validate_safe_path(self, target_path: str | Path, base_root: str | Path | None = None) -> Path:
         root = self._resolve_base_root(base_root) if base_root is not None else self.workspace_root
-        target = Path(target_path)
+        if target_path is None or str(target_path).strip() in ("", "."):
+            return root
+
+        raw = str(target_path).strip().replace("\\", "/")
+        if bool(re.match(r"^[a-zA-Z]:", raw)):
+            raise UnauthorizedException(
+                message=f"Absolute external path blocked: '{target_path}' contains drive specifier outside sandbox"
+            )
+
+        target = Path(raw)
+        if target.is_absolute():
+            try:
+                resolved = target.resolve()
+                if resolved == root or resolved.is_relative_to(root):
+                    return resolved
+            except Exception:
+                pass
+            raise UnauthorizedException(
+                message=f"Absolute external path blocked: '{target_path}' contains drive specifier outside sandbox"
+            )
+
+        if raw.startswith("/") or raw.startswith("//"):
+            raise UnauthorizedException(
+                message=f"Absolute path blocked: '{target_path}' cannot start with root slash"
+            )
+
         try:
-            resolved = target.resolve() if target.is_absolute() else (root / target).resolve()
+            resolved = (root / target).resolve()
         except Exception as err:
             raise ValidationException(message=f"Invalid path format: {target_path}") from err
+
         if not resolved.is_relative_to(root):
             raise UnauthorizedException(
                 message=f"Path traversal blocked: target path '{target_path}' escapes sandbox boundary '{root}'"

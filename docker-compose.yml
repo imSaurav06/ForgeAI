@@ -163,6 +163,8 @@ services:
     environment:
       - SERVICE_NAME=git-service
       - WORKSPACE_ROOT=/app/workspace
+      - REPOSITORY_SERVICE_URL=http://repository:8003
+      - MONGODB_URI=mongodb://mongodb:27017
     volumes:
       - C:/:/host_c
       - E:/:/host_e
@@ -177,6 +179,7 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+
 
   evaluation:
     build: .

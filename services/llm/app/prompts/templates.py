@@ -230,8 +230,24 @@ Available Tools:
 - run_test: {{"test_path": "optional/test/file.py"}}
 - git_status: {{}}
 - git_diff: {{}}
+- git_branch: {{"branch_name": "feature/branch-name", "checkout": true}}
+- git_stage: {{"files": ["path/to/file.ext"]}}
+- git_commit: {{"message": "commit message description"}}
+- git_log: {{"limit": 5}}
+- git_remotes: {{}}
+- git_push: {{"branch_name": "optional-branch-name"}}
 - retrieval_search: {{"query": "search query"}}
 - finish: {{"response": "Final completed answer or summary"}}
+
+
+Rules:
+1. Examine the Tool History above carefully before choosing an action.
+2. DO NOT call a tool with the same arguments if that tool output is already present in Tool History, unless you have modified or fixed files since the previous execution.
+3. If the task requires testing or verification (e.g., "run tests", "create test", "validate"), you MUST execute the relevant tests (run_test or run_command) before finishing, even if the feature code already appears complete.
+4. If a test fails, inspect the failure output, diagnose the root cause, fix the code using write_file or apply_patch, and rerun the test until it passes.
+5. If the task requires reviewing diffs or waiting for approval before committing (e.g., "review diff", "wait for approval", "commit"), you MUST inspect git_diff and call git_commit to trigger the commit approval boundary before finishing.
+6. Only call "finish" after all requested workflow steps (understanding, implementation/verification, tests, and review/approval) have actually been executed.
+7. Do not repeat tool calls or loop endlessly.
 
 Respond ONLY as a valid JSON object:
 {{
