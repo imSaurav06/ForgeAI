@@ -7,6 +7,8 @@ from services.git.app.schemas.git_schemas import (
     GitCommitItem,
     GitCommitRequest,
     GitDiffResponse,
+    GitPushRequest,
+    GitRemoteItem,
     GitRestoreRequest,
     GitStageRequest,
     GitStatusResponse,
@@ -19,6 +21,7 @@ router = APIRouter(prefix="/v1/git", tags=["Git Version Control"])
 git_service = GitService()
 
 
+
 @router.get(
     "/status",
     response_model=SuccessResponse[GitStatusResponse],
@@ -28,8 +31,12 @@ git_service = GitService()
         200: {"model": SuccessResponse[GitStatusResponse], "description": "Git status retrieved"},
     },
 )
-async def get_status(repository_id: str | None = Query(default=None, alias="repo_id")) -> SuccessResponse[GitStatusResponse]:
-    st = git_service.get_status(repository_id=repository_id)
+async def get_status(
+    repo_id: str | None = Query(default=None),
+    repository_id: str | None = Query(default=None),
+) -> SuccessResponse[GitStatusResponse]:
+    target_repo = repository_id or repo_id
+    st = git_service.get_status(repository_id=target_repo)
     return SuccessResponse(data=GitStatusResponse(**st), message="Git status retrieved")
 
 
@@ -42,8 +49,12 @@ async def get_status(repository_id: str | None = Query(default=None, alias="repo
         200: {"model": SuccessResponse[GitDiffResponse], "description": "Unified diff retrieved"},
     },
 )
-async def get_diff(repository_id: str | None = Query(default=None, alias="repo_id")) -> SuccessResponse[GitDiffResponse]:
-    diff = git_service.get_diff(repository_id=repository_id)
+async def get_diff(
+    repo_id: str | None = Query(default=None),
+    repository_id: str | None = Query(default=None),
+) -> SuccessResponse[GitDiffResponse]:
+    target_repo = repository_id or repo_id
+    diff = git_service.get_diff(repository_id=target_repo)
     return SuccessResponse(data=GitDiffResponse(**diff), message="Git diff retrieved")
 
 
@@ -58,11 +69,14 @@ async def get_diff(repository_id: str | None = Query(default=None, alias="repo_i
 )
 async def get_log(
     limit: int = Query(default=10, ge=1, le=100),
-    repository_id: str | None = Query(default=None, alias="repo_id"),
+    repo_id: str | None = Query(default=None),
+    repository_id: str | None = Query(default=None),
 ) -> SuccessResponse[list[GitCommitItem]]:
-    commits = git_service.get_log(limit=limit, repository_id=repository_id)
+    target_repo = repository_id or repo_id
+    commits = git_service.get_log(limit=limit, repository_id=target_repo)
     items = [GitCommitItem(**c) for c in commits]
     return SuccessResponse(data=items, message="Git log retrieved")
+
 
 
 @router.post(
@@ -155,3 +169,38 @@ async def stage(payload: GitStageRequest) -> SuccessResponse[GitActionResponse]:
 async def unstage(payload: GitUnstageRequest) -> SuccessResponse[GitActionResponse]:
     res = git_service.unstage(files=payload.files, repository_id=payload.repository_id)
     return SuccessResponse(data=GitActionResponse(**res), message="Files unstaged successfully")
+
+
+@router.get(
+    "/remotes",
+    response_model=SuccessResponse[list[GitRemoteItem]],
+    summary="Get Configured Git Remotes",
+    description="Returns list of configured git remotes with name and URL.",
+    responses={
+        200: {"model": SuccessResponse[list[GitRemoteItem]], "description": "Remotes retrieved"},
+    },
+)
+async def get_remotes(repository_id: str | None = Query(default=None, alias="repo_id")) -> SuccessResponse[list[GitRemoteItem]]:
+    remotes = git_service.get_remotes(repository_id=repository_id)
+    items = [GitRemoteItem(**r) for r in remotes]
+    return SuccessResponse(data=items, message="Git remotes retrieved")
+
+
+@router.post(
+    "/push",
+    response_model=SuccessResponse[GitActionResponse],
+    summary="Push Git Branch to Remote",
+    description="Pushes local git branch to specified remote repository.",
+    responses={
+        200: {"model": SuccessResponse[GitActionResponse], "description": "Branch pushed"},
+    },
+)
+async def push(payload: GitPushRequest) -> SuccessResponse[GitActionResponse]:
+    res = git_service.push(
+        branch_name=payload.branch_name,
+        remote=payload.remote,
+        set_upstream=payload.set_upstream,
+        repository_id=payload.repository_id,
+    )
+    return SuccessResponse(data=GitActionResponse(**res), message=res.get("message", "Git push executed"))
+

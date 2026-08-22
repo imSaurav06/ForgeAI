@@ -1,3 +1,6 @@
+from pathlib import Path
+import uuid
+
 from fastapi.testclient import TestClient
 
 from services.agent.app.main import app as agent_app
@@ -170,27 +173,6 @@ def test_e2e_06_tool_execution_and_rollback():
         },
     )
     assert d_resp.status_code == 200
-    """6. Test Tool Service file read/write, dangerous command blocking, and patch rollback."""
-    headers = get_internal_headers()
-    # Write File
-    w_resp = tools_client.post("/internal/v1/tools/write-file", headers=headers, json={"path": "e2e_test.py", "content": "x = 42\n"})
-    assert w_resp.status_code == 200
-
-    # Read File
-    r_resp = tools_client.post("/internal/v1/tools/read-file", headers=headers, json={"path": "e2e_test.py"})
-    assert r_resp.status_code == 200
-
-    # Path Traversal Attack -> Blocked
-    bad_r = tools_client.post("/internal/v1/tools/read-file", headers=headers, json={"path": "../../etc/passwd"})
-    assert bad_r.status_code in (400, 401, 422)
-
-    # Dangerous Command -> Blocked
-    bad_cmd = tools_client.post("/internal/v1/tools/run-command", headers=headers, json={"command": "rm -rf /"})
-    assert bad_cmd.status_code in (400, 401, 422)
-
-    # Delete File
-    d_resp = tools_client.post("/internal/v1/tools/delete-file", headers=headers, json={"path": "e2e_test.py"})
-    assert d_resp.status_code == 200
 
 
 def test_e2e_07_git_version_control():
@@ -201,7 +183,8 @@ def test_e2e_07_git_version_control():
     assert st_resp.status_code == 200
 
     # Branch Creation
-    br_resp = git_client.post("/v1/git/branches", headers=headers, json={"branch_name": "feature/e2e-test", "checkout": True})
+    branch_name = f"feature/e2e-{uuid.uuid4().hex[:8]}"
+    br_resp = git_client.post("/v1/git/branches", headers=headers, json={"branch_name": branch_name, "checkout": True})
     assert br_resp.status_code == 201
 
     # Diff

@@ -76,6 +76,10 @@ class ForgeQdrantClient:
             logger.info(f"Initializing Qdrant client with host='{self.qdrant_host}', port={self.qdrant_port}")
             self._client = QdrantClient(host=self.qdrant_host, port=self.qdrant_port)
 
+    @property
+    def client(self) -> QdrantClient:
+        return self._client
+
     @classmethod
     def generate_point_id(
         cls,

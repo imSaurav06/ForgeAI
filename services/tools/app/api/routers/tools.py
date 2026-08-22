@@ -493,3 +493,33 @@ async def run_formatter(
         data=res,
         message="Formatter executed",
     )
+
+
+@router.post(
+    "/run-typecheck",
+    response_model=SuccessResponse[dict[str, Any]],
+    summary="Run Typecheck",
+    description="Executes typecheck check inside the selected repository.",
+    responses={
+        200: {
+            "model": SuccessResponse[dict[str, Any]],
+            "description": "Typecheck executed",
+        },
+        404: {
+            "model": ErrorResponse,
+            "description": "Repository not found",
+        },
+    },
+)
+async def run_typecheck(
+    payload: RunQualityToolRequest,
+) -> SuccessResponse[dict[str, Any]]:
+    res = await tool_service.run_typecheck(
+        target_path=payload.target_path,
+        repository_id=payload.repository_id,
+    )
+
+    return SuccessResponse(
+        data=res,
+        message="Typecheck executed",
+    )

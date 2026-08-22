@@ -36,13 +36,23 @@ class TerminalRunner:
 
         process: asyncio.subprocess.Process | None = None
         try:
-            process = await asyncio.create_subprocess_shell(
-                clean_cmd,
-                stdout=asyncio.subprocess.PIPE,
-                stderr=asyncio.subprocess.PIPE,
-                cwd=str(work_dir),
-                env=os.environ.copy(),
-            )
+            if os.name == "nt":
+                shell_cmd = ["powershell.exe", "-NoProfile", "-NonInteractive", "-ExecutionPolicy", "Bypass", "-Command", clean_cmd]
+                process = await asyncio.create_subprocess_exec(
+                    *shell_cmd,
+                    stdout=asyncio.subprocess.PIPE,
+                    stderr=asyncio.subprocess.PIPE,
+                    cwd=str(work_dir),
+                    env=os.environ.copy(),
+                )
+            else:
+                process = await asyncio.create_subprocess_shell(
+                    clean_cmd,
+                    stdout=asyncio.subprocess.PIPE,
+                    stderr=asyncio.subprocess.PIPE,
+                    cwd=str(work_dir),
+                    env=os.environ.copy(),
+                )
             stdout_bytes, stderr_bytes = await asyncio.wait_for(
                 process.communicate(), timeout=timeout_sec
             )

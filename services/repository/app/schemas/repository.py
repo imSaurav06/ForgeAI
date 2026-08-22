@@ -17,6 +17,7 @@ class RepositoryMetadata(BaseModel):
     """Repository entity metadata model."""
 
     id: str = Field(..., description="Unique repository ID", json_schema_extra={"example": "repo_12345"})
+    repository_id: str | None = Field(default=None, description="Unique repository ID alias")
     name: str = Field(..., description="Repository name")
     path: str = Field(..., description="Local directory path")
     git_remote: str | None = Field(default=None, description="Remote Git URL")
@@ -27,6 +28,7 @@ class RepositoryMetadata(BaseModel):
         description="Registration timestamp",
     )
     indexed_at: str | None = Field(default=None, description="Last indexing timestamp")
+
 
 
 class RepoOpenRequest(BaseModel):

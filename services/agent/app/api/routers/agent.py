@@ -72,6 +72,9 @@ async def get_run(run_id: str) -> SuccessResponse[AgentRunStatusResponse]:
         repair_count=run.repair_count,
         execution_plan=run.execution_plan,
         steps=run.steps,
+        commit_approved=getattr(run, "commit_approved", False),
+        commit_pending=getattr(run, "commit_pending", False),
+        commit_proposal=getattr(run, "commit_proposal", {}) or {},
         created_at=run.created_at,
         updated_at=run.updated_at,
     )
@@ -100,6 +103,9 @@ async def continue_run(run_id: str, payload: AgentRunContinueRequest | None = No
         repair_count=run.repair_count,
         execution_plan=run.execution_plan,
         steps=run.steps,
+        commit_approved=getattr(run, "commit_approved", False),
+        commit_pending=getattr(run, "commit_pending", False),
+        commit_proposal=getattr(run, "commit_proposal", {}) or {},
         created_at=run.created_at,
         updated_at=run.updated_at,
     )
@@ -127,10 +133,14 @@ async def cancel_run(run_id: str) -> SuccessResponse[AgentRunStatusResponse]:
         repair_count=run.repair_count,
         execution_plan=run.execution_plan,
         steps=run.steps,
+        commit_approved=getattr(run, "commit_approved", False),
+        commit_pending=getattr(run, "commit_pending", False),
+        commit_proposal=getattr(run, "commit_proposal", {}) or {},
         created_at=run.created_at,
         updated_at=run.updated_at,
     )
     return SuccessResponse(data=status_resp, message="Agent run cancelled")
+
 
 
 @router.get(

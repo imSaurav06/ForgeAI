@@ -1,4 +1,8 @@
-from services.repository.app.api.routers.repository import router as repository_router
+from services.repository.app.api.routers.repository import (
+    projects_router,
+    router as repository_router,
+    search_router,
+)
 from shared.config.settings import get_settings
 from shared.database.mongodb import check_mongodb_health
 from shared.utils.app_factory import create_app
@@ -15,7 +19,7 @@ app = create_app(
     service_name="repository-service",
     service_version="0.1.0",
     description="Repository Intelligence Service responsible for code scanning, AST symbol parsing, language detection, and dependency graph analysis.",
-    routers=[repository_router],
+    routers=[repository_router, projects_router, search_router],
     health_details_provider=health_details_provider,
     enforce_internal_auth=True,
 )

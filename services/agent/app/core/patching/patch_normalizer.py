@@ -183,10 +183,45 @@ class CanonicalPatchNormalizer:
             json_str = candidate_str
 
         try:
-            parsed = json.loads(json_str)
+            parsed = json.loads(json_str, strict=False)
             if isinstance(parsed, dict):
                 return parsed
         except json.JSONDecodeError as exc:
+            # Fallback 1: Repair unescaped newlines in JSON strings
+            try:
+                repaired = re.sub(r'(?<!\\)\n', r'\\n', json_str)
+                parsed = json.loads(repaired, strict=False)
+                if isinstance(parsed, dict):
+                    return parsed
+            except Exception:
+                pass
+
+            # Fallback 2: Regex extraction of action, thought, arguments
+            action_match = re.search(r'"action"\s*:\s*"([^"]+)"', candidate_str)
+            if action_match:
+                thought_match = re.search(r'"thought"\s*:\s*"((?:[^"\\]|\\.)*)"', candidate_str, re.DOTALL)
+                extracted = {
+                    "thought": thought_match.group(1) if thought_match else "",
+                    "action": action_match.group(1),
+                    "arguments": {},
+                }
+                # Try to extract path / content or arguments
+                path_match = re.search(r'"path"\s*:\s*"([^"]+)"', candidate_str)
+                content_match = re.search(r'"content"\s*:\s*"((?:[^"\\]|\\.)*)"', candidate_str, re.DOTALL)
+                if path_match and content_match:
+                    extracted["arguments"] = {
+                        "path": path_match.group(1),
+                        "content": content_match.group(1).replace("\\n", "\n").replace('\\"', '"'),
+                    }
+                else:
+                    args_match = re.search(r'"arguments"\s*:\s*(\{[^{}]*\})', candidate_str, re.DOTALL)
+                    if args_match:
+                        try:
+                            extracted["arguments"] = json.loads(args_match.group(1), strict=False)
+                        except Exception:
+                            pass
+                return extracted
+
             logger.error(f"JSON parsing error during patch normalization: {exc}")
             raise ValidationException(
                 message=f"LLM returned an invalid JSON patch payload: {exc}"

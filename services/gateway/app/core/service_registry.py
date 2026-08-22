@@ -1,3 +1,4 @@
+import os
 from typing import Literal
 
 from services.gateway.app.core.config import get_gateway_settings
@@ -9,14 +10,21 @@ class ServiceRegistry:
 
     def __init__(self) -> None:
         self.settings = get_gateway_settings()
+        is_docker = os.path.exists("/.dockerenv") or os.environ.get("RUNNING_IN_DOCKER") == "true"
+        
+        def _resolve_url(port: int, default_docker_url: str) -> str:
+            if not is_docker and ("://" in default_docker_url and "localhost" not in default_docker_url and "127.0.0.1" not in default_docker_url):
+                return f"http://localhost:{port}"
+            return default_docker_url
+
         self._service_urls: dict[str, str] = {
-            "agent": self.settings.agent_url,
-            "llm": self.settings.llm_url,
-            "repository": self.settings.repository_url,
-            "retrieval": self.settings.retrieval_url,
-            "tools": self.settings.tools_url,
-            "git": self.settings.git_url,
-            "evaluation": self.settings.evaluation_url,
+            "agent": _resolve_url(8001, self.settings.agent_url),
+            "llm": _resolve_url(8002, self.settings.llm_url),
+            "repository": _resolve_url(8003, self.settings.repository_url),
+            "retrieval": _resolve_url(8004, self.settings.retrieval_url),
+            "tools": _resolve_url(8005, self.settings.tools_url),
+            "git": _resolve_url(8006, self.settings.git_url),
+            "evaluation": _resolve_url(8007, self.settings.evaluation_url),
         }
         self._service_status: dict[str, Literal["healthy", "degraded", "offline"]] = {
             name: "healthy" for name in self._service_urls

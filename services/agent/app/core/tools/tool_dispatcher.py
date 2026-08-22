@@ -256,6 +256,123 @@ class AgentToolDispatcher:
             data = resp.json()
             return data.get("data", data)
 
+    async def git_create_branch(
+        self,
+        repository_id: str,
+        branch_name: str,
+        checkout: bool = True,
+    ) -> dict[str, Any]:
+        """Create and optionally checkout a git branch."""
+        git_url = self.settings.git_service_url.rstrip("/")
+        endpoint = f"{git_url}/v1/git/branches"
+        payload = {
+            "branch_name": branch_name,
+            "checkout": checkout,
+            "repository_id": repository_id,
+        }
+
+        async with httpx.AsyncClient(timeout=15.0) as client:
+            resp = await client.post(endpoint, json=payload, headers=self._get_headers())
+            resp.raise_for_status()
+            data = resp.json()
+            return data.get("data", data)
+
+    async def git_checkout(
+        self,
+        repository_id: str,
+        target: str,
+    ) -> dict[str, Any]:
+        """Checkout existing branch or commit."""
+        git_url = self.settings.git_service_url.rstrip("/")
+        endpoint = f"{git_url}/v1/git/checkout"
+        payload = {
+            "target": target,
+            "repository_id": repository_id,
+        }
+
+        async with httpx.AsyncClient(timeout=15.0) as client:
+            resp = await client.post(endpoint, json=payload, headers=self._get_headers())
+            resp.raise_for_status()
+            data = resp.json()
+            return data.get("data", data)
+
+    async def git_stage(
+        self,
+        repository_id: str,
+        files: list[str] | None = None,
+    ) -> dict[str, Any]:
+        """Stage specific files (git add)."""
+        git_url = self.settings.git_service_url.rstrip("/")
+        endpoint = f"{git_url}/v1/git/stage"
+        payload = {
+            "files": files or ["."],
+            "repository_id": repository_id,
+        }
+
+        async with httpx.AsyncClient(timeout=15.0) as client:
+            resp = await client.post(endpoint, json=payload, headers=self._get_headers())
+            resp.raise_for_status()
+            data = resp.json()
+            return data.get("data", data)
+
+    async def git_commit(
+        self,
+        repository_id: str,
+        message: str,
+        author: str | None = None,
+        files: list[str] | None = None,
+    ) -> dict[str, Any]:
+        """Create git commit."""
+        git_url = self.settings.git_service_url.rstrip("/")
+        endpoint = f"{git_url}/v1/git/commit"
+        payload = {
+            "message": message,
+            "author": author,
+            "files": files,
+            "repository_id": repository_id,
+        }
+
+        async with httpx.AsyncClient(timeout=15.0) as client:
+            resp = await client.post(endpoint, json=payload, headers=self._get_headers())
+            resp.raise_for_status()
+            data = resp.json()
+            return data.get("data", data)
+
+    async def git_remotes(self, repository_id: str) -> list[dict[str, Any]]:
+        """Retrieve configured git remotes."""
+        git_url = self.settings.git_service_url.rstrip("/")
+        endpoint = f"{git_url}/v1/git/remotes"
+        params = {"repo_id": repository_id}
+
+        async with httpx.AsyncClient(timeout=15.0) as client:
+            resp = await client.get(endpoint, params=params, headers=self._get_headers())
+            resp.raise_for_status()
+            data = resp.json()
+            return data.get("data", data)
+
+    async def git_push(
+        self,
+        repository_id: str,
+        branch_name: str | None = None,
+        remote: str = "origin",
+        set_upstream: bool = True,
+    ) -> dict[str, Any]:
+        """Push branch to remote repository."""
+        git_url = self.settings.git_service_url.rstrip("/")
+        endpoint = f"{git_url}/v1/git/push"
+        payload = {
+            "branch_name": branch_name,
+            "remote": remote,
+            "set_upstream": set_upstream,
+            "repository_id": repository_id,
+        }
+
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            resp = await client.post(endpoint, json=payload, headers=self._get_headers())
+            resp.raise_for_status()
+            data = resp.json()
+            return data.get("data", data)
+
     async def execute_tool(
         self,
         tool_name: str,
@@ -315,7 +432,7 @@ class AgentToolDispatcher:
         if clean_name in ("run_test", "test_runner", "pytest", "test"):
             return await self.run_test(
                 repository_id=repository_id,
-                test_path=arguments.get("test_path"),
+                test_path=arguments.get("test_path", arguments.get("path")),
                 timeout_sec=float(arguments.get("timeout_sec", 60.0)),
             )
 
@@ -338,6 +455,49 @@ class AgentToolDispatcher:
                 limit=int(arguments.get("limit", 10)),
             )
 
+        if clean_name in ("git_branch", "git_create_branch", "create_branch", "branch"):
+            return await self.git_create_branch(
+                repository_id=repository_id,
+                branch_name=str(arguments.get("branch_name", arguments.get("name", ""))),
+                checkout=bool(arguments.get("checkout", True)),
+            )
+
+        if clean_name in ("git_checkout", "checkout"):
+            return await self.git_checkout(
+                repository_id=repository_id,
+                target=str(arguments.get("target", arguments.get("branch", ""))),
+            )
+
+        if clean_name in ("git_stage", "git_add", "stage", "add"):
+            raw_files = arguments.get("files")
+            files_list = [str(arguments["path"])] if "path" in arguments else (raw_files if isinstance(raw_files, list) else None)
+            return await self.git_stage(
+                repository_id=repository_id,
+                files=files_list,
+            )
+
+        if clean_name in ("git_commit", "commit"):
+            raw_files = arguments.get("files")
+            files_list = raw_files if isinstance(raw_files, list) else None
+            return await self.git_commit(
+                repository_id=repository_id,
+                message=str(arguments.get("message", "Commit changes")),
+                author=arguments.get("author"),
+                files=files_list,
+            )
+
+        if clean_name in ("git_remotes", "git_remote", "remotes", "remote"):
+            return await self.git_remotes(repository_id=repository_id)
+
+        if clean_name in ("git_push", "push"):
+            return await self.git_push(
+                repository_id=repository_id,
+                branch_name=arguments.get("branch_name", arguments.get("branch")),
+                remote=str(arguments.get("remote", "origin")),
+                set_upstream=bool(arguments.get("set_upstream", True)),
+            )
+
         raise ValidationException(
             message=f"Unknown or unsupported tool action: '{tool_name}'"
         )
+

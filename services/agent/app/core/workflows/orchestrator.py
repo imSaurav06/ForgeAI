@@ -25,6 +25,30 @@ class AgentWorkflowOrchestrator:
     canonical patch normalization, and automated self-correction repair loops.
     """
 
+    MODE_ALLOWED_TOOLS: dict[str, set[str]] = {
+        "ASK": {"read_file", "search_files", "retrieval_search", "finish"},
+        "PLAN": {"read_file", "search_files", "retrieval_search", "finish"},
+        "CODE": {
+            "read_file", "write_file", "search_files", "delete_file", "apply_patch",
+            "run_command", "run_test", "git_status", "git_diff", "git_branch",
+            "git_stage", "git_commit", "git_log", "retrieval_search", "finish"
+        },
+        "DEBUG": {
+            "read_file", "write_file", "search_files", "apply_patch",
+            "run_command", "run_test", "git_status", "git_diff",
+            "retrieval_search", "finish"
+        },
+        "TEST": {
+            "read_file", "search_files", "write_file", "apply_patch",
+            "run_command", "run_test", "retrieval_search", "finish"
+        },
+        "REVIEW": {
+            "read_file", "search_files", "git_status", "git_diff", "git_log",
+            "retrieval_search", "finish"
+        },
+        "EXPLAIN": {"read_file", "search_files", "retrieval_search", "finish"},
+    }
+
     def __init__(self) -> None:
         self.settings = get_settings()
         self.session_store = get_agent_session_store()
@@ -43,6 +67,9 @@ class AgentWorkflowOrchestrator:
     async def execute_run(self, run_id: str) -> AgentExecutionRun:
         """Execute full autonomous run workflow."""
         run = self.session_store.get_run(run_id)
+        if run.mode in ("TOOL_ACTION", "DYNAMIC", "AGENT", "ACTION"):
+            return await self.execute_dynamic_tool_loop(run_id)
+
         state_machine = AgentStateMachine(initial_state=run.state)
 
         # Emit agent.started
@@ -156,7 +183,7 @@ class AgentWorkflowOrchestrator:
     async def execute_dynamic_tool_loop(
         self,
         run_id: str,
-        max_steps: int = 10,
+        max_steps: int = 25,
     ) -> AgentExecutionRun:
         """
         Execute a dynamic multi-turn LLM -> Tool Action -> Execution -> Next Action loop.
@@ -167,22 +194,45 @@ class AgentWorkflowOrchestrator:
         self.event_bus.emit(run_id, "agent.started", {"mode": run.mode, "instruction": run.instruction})
 
         try:
-            state_machine.transition_to(AgentState.ANALYZING)
-            run.state = AgentState.ANALYZING
-            self.session_store.update_run(run)
+            if run.state == AgentState.REVIEWING:
+                state_machine.transition_to(AgentState.CODING)
+                run.state = AgentState.CODING
+                self.session_store.update_run(run)
+            elif run.state in (AgentState.CREATED, AgentState.ANALYZING):
+                state_machine.transition_to(AgentState.ANALYZING)
+                run.state = AgentState.ANALYZING
+                self.session_store.update_run(run)
+                state_machine.transition_to(AgentState.RETRIEVING)
+                run.state = AgentState.RETRIEVING
+                state_machine.transition_to(AgentState.CODING)
+                run.state = AgentState.CODING
+                self.session_store.update_run(run)
 
-            # Gather baseline context
-            base_context = await self._retrieve_context(run.repository_id, run.instruction)
-            history_blocks: list[str] = [f"Initial Retrieved Context:\n{base_context}"]
+            # Gather baseline context or preserve prior steps history
+            history_blocks: list[str] = []
+            if run.steps:
+                for s_i, s_entry in enumerate(run.steps, start=1):
+                    st_id = s_entry.get("step", f"step_{s_i}")
+                    st_out = s_entry.get("output", "")
+                    st_out_str = json.dumps(st_out, indent=2) if isinstance(st_out, (dict, list)) else str(st_out)
+                    if len(st_out_str) > 1000:
+                        st_out_str = st_out_str[:1000] + "..."
+                    history_blocks.append(f"Step {s_i} ({st_id}) - Arguments: {json.dumps(s_entry.get('arguments', {}))}\nResult:\n{st_out_str}")
+            else:
+                base_context = await self._retrieve_context(run.repository_id, run.instruction)
+                history_blocks.append(f"Initial Retrieved Context:\n{base_context}")
 
-            state_machine.transition_to(AgentState.RETRIEVING)
-            run.state = AgentState.RETRIEVING
-            state_machine.transition_to(AgentState.CODING)
-            run.state = AgentState.CODING
-            self.session_store.update_run(run)
+            executed_tools_history: dict[str, int] = {}
+            for s_entry in run.steps:
+                s_args = s_entry.get("arguments", {})
+                s_tool = s_entry.get("step", "").split("_")[-1]
+                if s_tool and s_args:
+                    executed_tools_history[f"{s_tool}:{json.dumps(s_args, sort_keys=True)}"] = 1
 
-            for step_idx in range(1, max_steps + 1):
+            start_step = len(run.steps) + 1
+            for step_idx in range(start_step, start_step + max_steps):
                 current_context = "\n\n".join(history_blocks)
+
 
                 # Call LLM for next action decision
                 action_response = await self._call_llm(
@@ -203,8 +253,46 @@ class AgentWorkflowOrchestrator:
 
                 logger.info(f"Dynamic tool step {step_idx}/{max_steps}: action='{action_name}', thought='{thought}'")
 
+                # Check tool permission for current mode
+                mode_upper = (run.mode or "CODE").upper()
+                allowed_tools = self.MODE_ALLOWED_TOOLS.get(mode_upper, self.MODE_ALLOWED_TOOLS["CODE"])
+                if action_name and action_name not in ("finish", "complete", "done") and action_name not in allowed_tools:
+                    perm_msg = f"Permission Denied: Tool '{action_name}' is not permitted in mode '{run.mode}'. Allowed tools in this mode are: {sorted(list(allowed_tools))}."
+                    logger.warning(f"Tool permission denied: run_id={run_id}, mode={run.mode}, tool={action_name}")
+                    run.steps.append({
+                        "step": f"step_{step_idx}_{action_name}_permission_denied",
+                        "thought": thought,
+                        "arguments": arguments,
+                        "output": {"status": "permission_denied", "message": perm_msg},
+                    })
+                    self.session_store.update_run(run)
+                    history_blocks.append(
+                        f"Step {step_idx} - Action: {action_name} [REJECTED — PERMISSION DENIED]\n"
+                        f"Feedback:\n{perm_msg}"
+                    )
+                    continue
+
                 # Terminal action
                 if action_name in ("finish", "complete", "done"):
+                    validation_err = self._validate_finish_action(run, thought, arguments)
+                    if validation_err:
+                        logger.info(f"Premature finish rejected for run '{run_id}': {validation_err}")
+                        run.steps.append({
+                            "step": f"step_{step_idx}_finish_rejected_validation_required",
+                            "thought": thought,
+                            "arguments": arguments,
+                            "output": {
+                                "status": "validation_required",
+                                "message": validation_err,
+                            },
+                        })
+                        self.session_store.update_run(run)
+                        history_blocks.append(
+                            f"Step {step_idx} - Action: finish [REJECTED — VALIDATION REQUIRED]\n"
+                            f"Feedback:\n{validation_err}"
+                        )
+                        continue
+
                     final_text = str(arguments.get("response", thought or "Task completed successfully."))
                     run.steps.append({
                         "step": f"step_{step_idx}_finish",
@@ -232,11 +320,102 @@ class AgentWorkflowOrchestrator:
                         self.event_bus.emit(run_id, "patch.created", {"status": "Applied patch successfully"})
                         history_blocks.append(f"Step {step_idx} - Patch Applied: {json.dumps(apply_res)}")
                         continue
-                    except Exception:
-                        raise ValidationException(message=f"LLM produced invalid action output at step {step_idx}")
+                    except Exception as parse_err:
+                        logger.warning(f"Could not parse action output at step {step_idx}: {parse_err}")
+                        err_msg = "Your previous response was not valid JSON. You MUST respond ONLY with a JSON object specifying 'thought', 'action', and 'arguments'."
+                        run.steps.append({
+                            "step": f"step_{step_idx}_parse_error",
+                            "thought": thought or "Invalid JSON syntax from model",
+                            "arguments": arguments,
+                            "output": {"status": "parse_error", "message": err_msg},
+                        })
+                        self.session_store.update_run(run)
+                        history_blocks.append(
+                            f"Step {step_idx} - [JSON PARSE ERROR]\n"
+                            f"Feedback:\n{err_msg}"
+                        )
+                        continue
 
-                # Emit step start
+                # Check for duplicate tool invocations (exact same tool + arguments in this run)
+                normalized_args_str = json.dumps(arguments, sort_keys=True)
+                action_key = f"{run.repository_id}::{action_name}::{normalized_args_str}"
+
+                if action_key in executed_tools_history:
+                    prev_step = executed_tools_history[action_key]
+                    logger.info(f"Duplicate tool action '{action_name}' detected (previously executed at step {prev_step}). Skipping dispatch.")
+
+                    dup_notice = (
+                        f"Notice: Tool '{action_name}' with these exact arguments was already executed in step {prev_step}. "
+                        "The results are in Tool History above. Do not repeat this call; proceed to your next required action "
+                        "(e.g., write_file to modify code, run_test to validate, or finish with summary)."
+                    )
+
+                    # Record skipped step in run history without re-dispatching
+                    run.steps.append({
+                        "step": f"step_{step_idx}_{action_name}_duplicate_skipped",
+                        "thought": thought,
+                        "arguments": arguments,
+                        "output": {"status": "duplicate_skipped", "message": dup_notice, "original_step": prev_step},
+                    })
+                    self.session_store.update_run(run)
+
+                    # Append notice to history_blocks so LLM turn context receives it
+                    history_blocks.append(
+                        f"Step {step_idx} - Action: {action_name} [DUPLICATE SKIPPED]\n"
+                        f"Arguments: {json.dumps(arguments)}\n"
+                        f"Result:\n{dup_notice}"
+                    )
+                    continue
+
+                executed_tools_history[action_key] = step_idx
+
+                # Emit step and tool lifecycle events
                 self.event_bus.emit(run_id, "coding.started", {"step": step_idx, "tool": action_name, "thought": thought})
+                if action_name in ("retrieval_search", "semantic_search", "rag"):
+                    self.event_bus.emit(run_id, "retrieval.started", {"step": step_idx, "query": arguments.get("query", ""), "repository_id": run.repository_id})
+
+                # Enforce commit approval boundary
+                if action_name in ("git_commit", "commit") and not getattr(run, "commit_approved", False):
+
+                    logger.info(f"Commit approval boundary triggered for run '{run_id}'. Awaiting human review.")
+                    proposal = {
+                        "branch": arguments.get("branch") or arguments.get("branch_name") or "active_branch",
+                        "message": arguments.get("message") or arguments.get("commit_message") or "Probe commit",
+                        "files": arguments.get("files") or [],
+                        "repository_id": run.repository_id,
+                    }
+                    run.commit_pending = True
+                    run.commit_proposal = proposal
+                    blocked_msg = "Commit blocked: Human approval required before committing changes to Git repository."
+                    run.steps.append({
+                        "step": f"step_{step_idx}_git_commit_approval_required",
+                        "thought": thought,
+                        "arguments": arguments,
+                        "output": {
+                            "status": "blocked",
+                            "message": blocked_msg,
+                            "approval_required": True,
+                            "proposal": proposal,
+                        },
+                    })
+                    try:
+                        state_machine.transition_to(AgentState.REVIEWING)
+                    except Exception:
+                        pass
+                    run.state = AgentState.REVIEWING
+                    self.session_store.update_run(run)
+
+                    self.event_bus.emit(run_id, "git.approval.requested", {
+                        "step": step_idx,
+                        "proposal": proposal,
+                        "status": "awaiting_approval",
+                    })
+                    self.event_bus.emit(run_id, "git.approval.blocked", {
+                        "step": step_idx,
+                        "message": blocked_msg,
+                        "proposal": proposal,
+                    })
+                    return run
 
                 try:
                     tool_output = await self.tool_dispatcher.execute_tool(
@@ -244,6 +423,7 @@ class AgentWorkflowOrchestrator:
                         repository_id=run.repository_id,
                         arguments=arguments,
                     )
+
                 except Exception as tool_err:
                     tool_output = {"error": str(tool_err), "status": "failed"}
 
@@ -261,19 +441,51 @@ class AgentWorkflowOrchestrator:
                 if len(out_str) > 2000:
                     out_str = out_str[:2000] + "... [truncated]"
 
-                history_blocks.append(
+                step_block = (
                     f"Step {step_idx} - Action: {action_name}\n"
                     f"Arguments: {json.dumps(arguments)}\n"
                     f"Result:\n{out_str}"
                 )
+                history_blocks.append(step_block)
+
+                # Emit tool completed event
+                is_failed = isinstance(tool_output, dict) and (
+                    tool_output.get("status") == "failed"
+                    or (isinstance(tool_output.get("exit_code"), int) and tool_output.get("exit_code") != 0)
+                )
+                self.event_bus.emit(run_id, "tool.completed", {
+                    "step": step_idx,
+                    "tool": action_name,
+                    "status": "failed" if is_failed else "completed",
+                })
+                if action_name in ("retrieval_search", "semantic_search", "rag"):
+                    self.event_bus.emit(run_id, "retrieval.completed", {
+                        "step": step_idx,
+                        "results_count": len(tool_output) if isinstance(tool_output, list) else 0,
+                    })
 
                 if action_name in ("apply_patch", "write_file", "delete_file"):
                     self.event_bus.emit(run_id, "patch.created", {"action": action_name, "status": "executed"})
+                    # File system state mutated: clear tool cache to allow re-testing
+                    executed_tools_history.clear()
                 elif action_name in ("run_test", "pytest"):
                     if isinstance(tool_output, dict) and tool_output.get("passed"):
                         self.event_bus.emit(run_id, "tests.passed", {"step": step_idx})
                     else:
                         self.event_bus.emit(run_id, "tests.failed", {"step": step_idx, "output": tool_output})
+                elif action_name in ("git_status", "status"):
+                    self.event_bus.emit(run_id, "git.status.completed", {"step": step_idx, "status": tool_output})
+                elif action_name in ("git_diff", "diff"):
+                    self.event_bus.emit(run_id, "git.diff.completed", {"step": step_idx, "diff": tool_output})
+                elif action_name in ("git_branch", "git_create_branch", "create_branch", "branch"):
+                    self.event_bus.emit(run_id, "git.branch.created", {"step": step_idx, "result": tool_output})
+                elif action_name in ("git_stage", "git_add", "stage", "add"):
+                    self.event_bus.emit(run_id, "git.add.completed", {"step": step_idx, "result": tool_output})
+                elif action_name in ("git_commit", "commit"):
+                    self.event_bus.emit(run_id, "git.commit.completed", {"step": step_idx, "result": tool_output})
+                elif action_name in ("git_push", "push"):
+                    self.event_bus.emit(run_id, "git.push.completed", {"step": step_idx, "result": tool_output})
+
 
             # Max steps reached
             state_machine.transition_to(AgentState.COMPLETED)
@@ -509,3 +721,77 @@ class AgentWorkflowOrchestrator:
         except Exception as err:
             logger.warning(f"Could not run tests: {err}")
             return {"passed": False, "error": f"Test execution exception: {err}", "exit_code": -1}
+
+    def _validate_finish_action(
+        self,
+        run: AgentExecutionRun,
+        thought: str,
+        arguments: dict[str, Any],
+    ) -> str | None:
+        """
+        Validate whether a 'finish' action is permissible for the current run mode and instruction.
+        Returns a guidance message if premature, or None if finish is permitted.
+        """
+        mode = (run.mode or "CODE").upper()
+        # Read-only query modes can finish whenever LLM has sufficient evidence
+        if mode in ("ASK", "EXPLAIN", "PLAN"):
+            return None
+
+        inst_lower = (run.instruction or "").lower()
+        executed_step_names = [str(s.get("step", "")).lower() for s in run.steps]
+
+        if mode == "REVIEW":
+            has_inspected_diff = any(
+                any(r in s for r in ("git_diff", "git_status", "diff", "status", "git_log"))
+                for s in executed_step_names
+            )
+            if not has_inspected_diff:
+                return (
+                    "Review Required: REVIEW mode requires inspecting working tree status or diff. "
+                    "Execute git_diff or git_status to inspect changes before finishing."
+                )
+            return None
+
+        if mode == "TEST":
+            has_executed_test = any(
+                any(t in s for t in ("run_test", "pytest", "run_command", "execute_command", "test_runner"))
+                for s in executed_step_names
+            )
+            if not has_executed_test:
+                return (
+                    "Test Execution Required: TEST mode requires executing tests. "
+                    "Execute run_test or run_command to run the test suite before finishing."
+                )
+            return None
+
+        # Check 1: Mandatory test / validation requirement (for CODE and DEBUG)
+        test_keywords = ("test", "run test", "run_test", "pytest", "npm test", "unit test", "validation", "verify", "retest")
+        requires_test = any(kw in inst_lower for kw in test_keywords)
+        has_executed_test = any(
+            any(t in s for t in ("run_test", "pytest", "run_command", "execute_command", "test_runner"))
+            for s in executed_step_names
+        )
+
+        if requires_test and not has_executed_test:
+            return (
+                "Validation Required: The user instruction explicitly requires running/validating tests. "
+                "Even if the feature implementation appears to already exist or no files were modified, "
+                "you MUST execute the relevant test command (e.g., run_command or run_test) to verify the code "
+                "before finishing or proposing a commit."
+            )
+
+        # Check 2: Git diff / review / commit approval requirement (for CODE mode)
+        review_keywords = ("review", "git diff", "git_diff", "diff", "approval", "approve", "commit")
+        requires_review = any(kw in inst_lower for kw in review_keywords)
+        has_executed_review = any(
+            any(r in s for r in ("git_diff", "diff", "git_status", "status", "git_commit", "approval_required"))
+            for s in executed_step_names
+        )
+
+        if requires_review and not has_executed_review:
+            return (
+                "Review Required: The user instruction requires reviewing the git diff or waiting for commit approval. "
+                "Execute git_diff or git_status to review working tree changes, or call git_commit to propose the commit."
+            )
+
+        return None

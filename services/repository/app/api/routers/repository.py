@@ -238,3 +238,98 @@ async def get_repository_files(id: str) -> SuccessResponse[list[dict[str, Any]]]
 async def get_repository_dependencies(id: str) -> SuccessResponse[dict[str, Any]]:
     graph = repo_service.get_dependencies(id)
     return SuccessResponse(data=graph, message="Dependency graph retrieved")
+
+
+@router.get(
+    "/{id}/references",
+    response_model=SuccessResponse[list[dict[str, Any]]],
+    summary="Find Symbol References",
+    description="Finds all file references to a symbol identifier.",
+)
+async def get_repository_references(
+    id: str,
+    symbol_name: str = Query(..., description="Target symbol identifier to locate"),
+) -> SuccessResponse[list[dict[str, Any]]]:
+    refs = repo_service.find_references(id, symbol_name)
+    return SuccessResponse(data=refs, message="Symbol references found")
+
+
+@router.get(
+    "/{id}/imports",
+    response_model=SuccessResponse[list[dict[str, Any]]],
+    summary="Get Repository Imports",
+    description="Lists module dependencies and import relationships.",
+)
+async def get_repository_imports(
+    id: str,
+    file_path: str | None = Query(default=None),
+) -> SuccessResponse[list[dict[str, Any]]]:
+    imports = repo_service.get_imports(id, file_path=file_path)
+    return SuccessResponse(data=imports, message="Imports retrieved")
+
+
+search_router = APIRouter(prefix="/v1/search", tags=["Repository Search"])
+
+
+@search_router.post(
+    "/code",
+    response_model=SuccessResponse[list[dict[str, Any]]],
+    summary="Search Code in Repository",
+    description="Finds text/regex occurrences across repository files.",
+)
+async def search_code_endpoint(
+    payload: dict[str, Any],
+) -> SuccessResponse[list[dict[str, Any]]]:
+    repo_id = payload.get("repository_id") or payload.get("project_id", "")
+    query = payload.get("query", "")
+    limit = payload.get("limit", 50)
+    matches = repo_service.search_code(repo_id, query, limit=limit)
+    return SuccessResponse(data=matches, message="Code search completed")
+
+
+@search_router.post(
+    "/symbol",
+    response_model=SuccessResponse[list[dict[str, Any]]],
+    summary="Search Symbols in Repository",
+    description="Finds AST symbols matching identifier query.",
+)
+async def search_symbol_endpoint(
+    payload: dict[str, Any],
+) -> SuccessResponse[list[dict[str, Any]]]:
+    repo_id = payload.get("repository_id") or payload.get("project_id", "")
+    symbol_name = payload.get("symbol_name") or payload.get("query", "")
+    limit = payload.get("limit", 20)
+    matches = repo_service.search_symbol(repo_id, symbol_name, limit=limit)
+    return SuccessResponse(data=matches, message="Symbol search completed")
+
+
+projects_router = APIRouter(prefix="/v1/projects", tags=["Projects"])
+
+
+@projects_router.get(
+    "/{id}",
+    response_model=SuccessResponse[RepositoryMetadata],
+    summary="Get Project Details",
+    description="Retrieves metadata for a specific project/repository ID.",
+)
+async def get_project_details(
+    id: str,
+    x_user_id: str | None = Header(default=None, alias="X-User-ID"),
+) -> SuccessResponse[RepositoryMetadata]:
+    meta = await repo_service.get_repository_metadata_async(id, user_id=x_user_id)
+    return SuccessResponse(data=meta, message="Project details found")
+
+
+@projects_router.delete(
+    "/{id}",
+    response_model=SuccessResponse[dict[str, Any]],
+    summary="Delete Project Registration",
+    description="Deletes project repository registration.",
+)
+async def delete_project_endpoint(
+    id: str,
+) -> SuccessResponse[dict[str, Any]]:
+    res = await repo_service.delete_repository(id)
+    return SuccessResponse(data=res, message="Project deleted successfully")
+
+

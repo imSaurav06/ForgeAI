@@ -153,3 +153,52 @@ async def get_index_status(
     matches = qdrant.search(query_vector=[0.0] * 384, repository_id=repository_id, limit=1000)
     resp = IndexStatusResponse(repository_id=repository_id, indexed_points_count=len(matches), status="completed")
     return SuccessResponse(data=resp, message="Index status retrieved")
+
+
+@router.post(
+    "/v1/search/related-code",
+    response_model=SuccessResponse[list[dict[str, Any]]],
+    summary="Retrieve Related Code",
+    description="Finds relevant code context for target symbol or file.",
+)
+async def retrieve_related_code_endpoint(
+    payload: dict[str, Any],
+) -> SuccessResponse[list[dict[str, Any]]]:
+    repo_id = payload.get("repository_id", "")
+    query = payload.get("query", "")
+    limit = payload.get("limit", 5)
+    results = await retrieval_service.retrieve_related_code(repo_id, query, limit=limit)
+    return SuccessResponse(data=results, message="Related code retrieved")
+
+
+@router.post(
+    "/v1/search/tests",
+    response_model=SuccessResponse[list[dict[str, Any]]],
+    summary="Retrieve Tests",
+    description="Finds test files and functions for target module.",
+)
+async def retrieve_tests_endpoint(
+    payload: dict[str, Any],
+) -> SuccessResponse[list[dict[str, Any]]]:
+    repo_id = payload.get("repository_id", "")
+    module_name = payload.get("module_name") or payload.get("query", "")
+    limit = payload.get("limit", 5)
+    results = await retrieval_service.retrieve_tests(repo_id, module_name, limit=limit)
+    return SuccessResponse(data=results, message="Tests retrieved")
+
+
+@router.post(
+    "/v1/search/documentation",
+    response_model=SuccessResponse[list[dict[str, Any]]],
+    summary="Retrieve Documentation",
+    description="Finds relevant documentation files and markdown snippets.",
+)
+async def retrieve_documentation_endpoint(
+    payload: dict[str, Any],
+) -> SuccessResponse[list[dict[str, Any]]]:
+    repo_id = payload.get("repository_id", "")
+    query = payload.get("query", "")
+    limit = payload.get("limit", 5)
+    results = await retrieval_service.retrieve_documentation(repo_id, query, limit=limit)
+    return SuccessResponse(data=results, message="Documentation retrieved")
+

@@ -41,12 +41,48 @@ class SecuritySandbox:
 
     def validate_safe_path(self, target_path: str | Path, base_root: str | Path | None = None) -> Path:
         root = self._resolve_base_root(base_root) if base_root is not None else self.workspace_root
-        target = Path(target_path)
+        if target_path is None or str(target_path).strip() in ("", "."):
+            return root
+
+        raw = str(target_path).strip().replace("\\", "/")
+
+        # Check if target is an absolute path (Windows drive like E:/ or POSIX /)
+        target = Path(raw)
+        if not target.is_absolute() and (raw.lower().startswith("e:/") or raw.lower().startswith("f:/") or raw.lower().startswith("c:/")):
+            target = Path(raw)
+
+        if target.is_absolute() or bool(re.match(r"^[a-zA-Z]:", raw)):
+            # Check docker mount equivalence
+            candidate = target
+            if not candidate.exists():
+                if raw.lower().startswith("e:/") and Path("/host_e/" + raw[3:]).exists():
+                    candidate = Path("/host_e/" + raw[3:]).resolve()
+                elif raw.lower().startswith("f:/") and Path("/host_f/" + raw[3:]).exists():
+                    candidate = Path("/host_f/" + raw[3:]).resolve()
+                elif raw.lower().startswith("c:/") and Path("/host_c/" + raw[3:]).exists():
+                    candidate = Path("/host_c/" + raw[3:]).resolve()
+
+            try:
+                resolved = candidate.resolve()
+                if resolved == root or resolved.is_relative_to(root):
+                    return resolved
+            except Exception:
+                pass
+            raise UnauthorizedException(
+                message=f"Absolute external path blocked: '{target_path}' is outside sandbox boundary '{root}'"
+            )
+
+        if raw.startswith("/") or raw.startswith("//"):
+            raise UnauthorizedException(
+                message=f"Absolute path blocked: '{target_path}' cannot start with root slash"
+            )
+
         try:
-            resolved = target.resolve() if target.is_absolute() else (root / target).resolve()
+            resolved = (root / target).resolve()
         except Exception as err:
             raise ValidationException(message=f"Invalid path format: {target_path}") from err
-        if not resolved.is_relative_to(root):
+
+        if not (resolved == root or resolved.is_relative_to(root)):
             raise UnauthorizedException(
                 message=f"Path traversal blocked: target path '{target_path}' escapes sandbox boundary '{root}'"
             )

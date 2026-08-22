@@ -20,6 +20,10 @@ class RepositoryCache:
         if repository_id in self._cache:
             del self._cache[repository_id]
 
+    def delete(self, repository_id: str) -> None:
+        """Alias for invalidate."""
+        self.invalidate(repository_id)
+
     def clear(self) -> None:
         """Clear all cached entries."""
         self._cache.clear()

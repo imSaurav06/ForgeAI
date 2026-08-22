@@ -701,24 +701,22 @@ class PTYSessionManager:
             )
 
             if replay_scrollback:
-                for chunk in managed.scrollback:
+                replay_limit = max(1, subscriber.queue.maxsize - 50) if subscriber.queue.maxsize > 0 else len(managed.scrollback)
+                replay_chunks = list(managed.scrollback)[-replay_limit:]
+                for chunk in replay_chunks:
                     try:
                         subscriber.queue.put_nowait(
                             chunk
                         )
-
                     except asyncio.QueueFull:
                         subscriber.overflowed = True
-
                         managed.overflowed_subscribers.add(
                             subscriber_id
                         )
-
                         managed.subscribers.pop(
                             subscriber_id,
                             None,
                         )
-
                         return subscriber.queue
 
             self._ensure_reader_locked(

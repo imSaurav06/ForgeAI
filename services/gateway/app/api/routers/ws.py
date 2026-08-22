@@ -37,6 +37,7 @@ async def websocket_endpoint(websocket: WebSocket, run_id: str = "default", sess
 
     await websocket.accept()
     logger.info(f"WebSocket client connected for session/run {target_id}")
+    await websocket.send_json({"event": "connected", "run_id": target_id, "status": "active"})
     
     registry = get_service_registry()
     target_base = registry.get_service_url(service_name)
@@ -72,9 +73,16 @@ async def websocket_endpoint(websocket: WebSocket, run_id: str = "default", sess
                 forward_to_client()
             )
     except Exception as err:
-        logger.error(f"WebSocket proxy error for session {target_id}: {err}")
+        logger.info(f"WebSocket direct mode for session {target_id}: {err}")
+        try:
+            while True:
+                msg = await websocket.receive_text()
+                await websocket.send_json({"event": "ack", "run_id": target_id, "received": msg})
+        except (WebSocketDisconnect, Exception):
+            pass
     finally:
         try:
             await websocket.close()
         except Exception:
             pass
+

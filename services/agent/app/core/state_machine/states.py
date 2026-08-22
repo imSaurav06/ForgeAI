@@ -39,7 +39,8 @@ class AgentStateMachine:
             AgentState.FAILED,
             AgentState.CANCELLED,
         },
-        AgentState.REVIEWING: {AgentState.COMPLETED, AgentState.FAILED, AgentState.CANCELLED},
+        AgentState.REVIEWING: {AgentState.ANALYZING, AgentState.RETRIEVING, AgentState.CODING, AgentState.APPLYING, AgentState.COMPLETED, AgentState.FAILED, AgentState.CANCELLED},
+
         AgentState.COMPLETED: set(),
         AgentState.FAILED: set(),
         AgentState.CANCELLED: set(),

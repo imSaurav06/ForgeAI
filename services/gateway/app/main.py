@@ -5,6 +5,7 @@ from services.gateway.app.api.middleware.rate_limit import RateLimitMiddleware
 from services.gateway.app.api.routers import (
     agent_router,
     auth_router,
+    conversations_router,
     filesystem_router,
     git_router,
     models_router,
@@ -27,6 +28,7 @@ from shared.schemas.responses import SuccessResponse
 # Create Version 1 API Master Router
 v1_router = APIRouter(prefix=settings.api_v1_prefix)
 v1_router.include_router(auth_router)
+v1_router.include_router(conversations_router)
 v1_router.include_router(projects_router)
 v1_router.include_router(repositories_router)
 v1_router.include_router(filesystem_router)
@@ -46,12 +48,6 @@ async def get_system_health_endpoint():
     return SuccessResponse(data=system_health, message="System health retrieved")
 
 
-async def get_aggregated_health():
-    """Health check callback querying all backend microservices with TTL cache."""
-    system_health = await health_aggregator.get_system_health()
-    return system_health.model_dump()
-
-
 app = create_app(
     service_name="api-gateway",
     service_version="0.1.0",
@@ -59,7 +55,6 @@ app = create_app(
     routers=[v1_router, metrics_router],
     startup_hooks=[init_mongodb_indexes],
     shutdown_hooks=[close_mongodb_connection],
-    health_details_provider=get_aggregated_health,
 )
 
 # Add Gateway Production Middlewares
